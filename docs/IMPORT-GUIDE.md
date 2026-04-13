@@ -1,41 +1,41 @@
-# Import Guide - OpenClaw Memory v0.4.2
+# Import Guide - OpenClaw Memory v0.5.2
 
-**Как импортировать внешние данные в систему памяти**
+**How to import external data into the memory system**
 
 ---
 
-## 📖 Содержание
+## 📖 Table of Contents
 
-1. [Зачем нужен импорт](#зачем-нужен-импорт)
-2. [Поддерживаемые форматы](#поддерживаемые-форматы)
+1. [Why Import](#why-import)
+2. [Supported Formats](#supported-formats)
 3. [CLI Import](#cli-import)
 4. [Dashboard Import](#dashboard-import)
-5. [Форматы данных](#форматы-данных)
-6. [Примеры](#примеры)
+5. [Data Formats](#data-formats)
+6. [Examples](#examples)
 7. [Troubleshooting](#troubleshooting)
 8. [FAQ](#faq)
 
 ---
 
-## Зачем нужен импорт
+## Why Import
 
-OpenClaw Memory работает с данными от Claude Code (tool calls, messages).
-Но часто нужно загрузить **внешние данные**:
+OpenClaw Memory works with data from Claude Code (tool calls, messages).
+But often you need to load **external data**:
 
-- 💬 **Прошлые чаты** из ChatGPT, Claude.ai, Gemini
-- 📚 **Документацию** проектов (README, guides)
-- 📝 **Заметки** и статьи
-- 💻 **Code** с комментариями/docstrings
-- 📊 **Structured data** (CSV таблицы)
+- 💬 **Past chats** from ChatGPT, Claude.ai, Gemini
+- 📚 **Project documentation** (README, guides)
+- 📝 **Notes** and articles
+- 💻 **Code** with comments/docstrings
+- 📊 **Structured data** (CSV tables)
 
-**Import система** позволяет загрузить эти данные в систему памяти.
+**Import system** allows you to load this data into the memory system.
 
 ---
 
-## Поддерживаемые форматы
+## Supported Formats
 
-| Формат | Расширения | Что извлекается |
-|--------|------------|-----------------|
+| Format | Extensions | What's Extracted |
+|--------|------------|------------------|
 | **JSON** | `.json` | Chat exports (ChatGPT, Claude, Gemini, custom) |
 | **Text** | `.txt`, `.md` | Documents, notes, articles |
 | **CSV** | `.csv` | Structured data (concepts, facts) |
@@ -45,45 +45,45 @@ OpenClaw Memory работает с данными от Claude Code (tool calls,
 
 ## CLI Import
 
-### Команды:
+### Commands:
 
 ```bash
-# Import одного файла
+# Import single file
 npm run import:file -- path/to/file.json
 
-# Import нескольких файлов (batch)
+# Import multiple files (batch)
 npm run import:batch -- file1.txt file2.md file3.csv
 
-# Import директории (рекурсивно)
+# Import directory (recursive)
 npm run import:dir -- path/to/docs/
 
-# Показать историю импортов
+# Show import history
 npm run import:history
 ```
 
-### Опции:
+### Options:
 
 ```bash
-# С автоматической консолидацией
+# With automatic consolidation
 npm run import:file -- file.json --consolidate
 
-# С генерацией embeddings
+# With embedding generation
 npm run import:file -- file.json --embeddings
 
-# Оба варианта
+# Both options
 npm run import:file -- file.json --consolidate --embeddings
 ```
 
-### Примеры:
+### Examples:
 
 ```bash
-# Import чата из ChatGPT
+# Import ChatGPT chat
 npm run import:file -- ~/Downloads/chatgpt-export.json
 
-# Import всей документации проекта
+# Import all project documentation
 npm run import:dir -- ./docs/
 
-# Import и сразу консолидация
+# Import and immediately consolidate
 npm run import:file -- notes.txt --consolidate
 ```
 
@@ -91,556 +91,433 @@ npm run import:file -- notes.txt --consolidate
 
 ## Dashboard Import
 
-### Открой Dashboard:
+### Open Dashboard:
 ```bash
 npm run dashboard
 # → http://localhost:3000
 ```
 
-### В правой панели найди секцию "📥 Import Data"
+### In the right panel, find the "📥 Quick Import" section:
+
+1. **Drag & Drop** files into the upload zone
+2. Or **click** to browse files
+3. Select one or multiple files
+4. Click **"Import to Memory"**
+
+### Features:
+
+- ✅ Drag & drop support
+- ✅ Multi-file batch import
+- ✅ Progress bar for batch operations
+- ✅ Real-time import status
+- ✅ File format validation
+- ✅ Size warnings for large files (>5MB)
+- ✅ Remove files from queue before import
+- ✅ Import history timeline
+
+### Import Timeline:
+
+After importing, check the **"📅 Import Timeline"** section to see:
+- File name and format
+- Number of episodes created
+- File size
+- Import duration
+- Time ago ("just now", "2h ago")
+- Success/failure status
 
 ---
 
-### Метод 1: File Upload
+## Data Formats
 
-1. Click **"📁 Choose File"**
-2. Выбери файл (JSON, TXT, MD, CSV, JS, PY, TS)
-3. (Optional) Check ☑️ **Auto-consolidate**
-4. Click **"Import"**
+### JSON Format (Chat Exports)
 
-**Результат:**
-```
-✅ Imported 15 episodes from chatgpt-export.json
-```
+OpenClaw Memory auto-detects chat export formats:
 
----
+#### ChatGPT Export
 
-### Метод 2: Text Paste
-
-1. Вставь текст в **text area**
-   - Чат истории
-   - Документацию
-   - Заметки
-   - Любой текст
-
-2. (Optional) Check ☑️ **Auto-consolidate**
-
-3. Click **"Import"**
-
-**Результат:**
-```
-✅ Imported 3 episodes from text
-```
-
----
-
-### Import History
-
-В нижней части секции:
-- **Recent Imports** - последние 20 импортов
-- Показывает: имя файла, формат, количество episodes, время
-- ✅ Success (зелёная полоска)
-- ❌ Failed (красная полоска)
-
-Click **"Clear"** чтобы очистить историю.
-
----
-
-## Форматы данных
-
-### 1. JSON (Chat Exports)
-
-#### ChatGPT Format:
 ```json
 {
-  "conversations": [
-    {
-      "mapping": {
-        "node-id": {
-          "message": {
-            "author": { "role": "user" },
-            "content": { "parts": ["Hello!"] },
-            "create_time": 1704067200
-          }
-        }
+  "title": "Conversation about X",
+  "create_time": 1234567890,
+  "mapping": {
+    "uuid1": {
+      "message": {
+        "author": {"role": "user"},
+        "content": {"parts": ["User message"]}
+      }
+    },
+    "uuid2": {
+      "message": {
+        "author": {"role": "assistant"},
+        "content": {"parts": ["Assistant response"]}
       }
     }
-  ]
+  }
 }
 ```
 
-#### Claude Format:
+#### Claude Export
+
 ```json
 {
-  "uuid": "conv-123",
+  "name": "Conversation about Y",
+  "created_at": "2024-01-01T00:00:00.000Z",
   "chat_messages": [
     {
-      "sender": "user",
-      "text": "Hello!",
-      "created_at": "2024-01-01T00:00:00Z"
-    }
-  ]
-}
-```
-
-#### Generic Format (universal):
-```json
-{
-  "source": "My AI Assistant",
-  "messages": [
-    {
-      "role": "user",
-      "content": "Hello!",
-      "timestamp": "2024-01-01T00:00:00Z"
+      "sender": "human",
+      "text": "User message"
     },
     {
-      "role": "assistant",
-      "content": "Hi! How can I help?",
-      "timestamp": "2024-01-01T00:00:05Z"
+      "sender": "assistant",
+      "text": "Assistant response"
     }
   ]
 }
 ```
 
-**Auto-detection:** Система автоматически определяет формат.
+#### Gemini Export
 
----
+```json
+{
+  "title": "Chat Title",
+  "history": [
+    {
+      "role": "user",
+      "parts": [{"text": "User message"}]
+    },
+    {
+      "role": "model",
+      "parts": [{"text": "Model response"}]
+    }
+  ]
+}
+```
 
-### 2. Text (Documents)
+#### Generic Format
 
-#### Markdown:
+If your chat export doesn't match these formats, create a generic array:
+
+```json
+[
+  {
+    "role": "user",
+    "content": "User message",
+    "timestamp": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "role": "assistant",
+    "content": "Assistant response",
+    "timestamp": "2024-01-01T00:01:00.000Z"
+  }
+]
+```
+
+### Text Format (Documents)
+
+Import `.txt` or `.md` files:
+
+**Features:**
+- Smart chunking (splits into logical sections)
+- Preserves headers and structure
+- Extracts metadata from Markdown frontmatter
+
+**Example:**
+
 ```markdown
 # Project Documentation
 
-## Django REST Framework
+## Installation
 
-Django REST Framework is a powerful toolkit for building Web APIs.
+Install with npm...
 
-### Features
-- Serialization
-- Authentication
-- Viewsets
+## Usage
+
+Run with...
 ```
 
-**Processing:**
-- Splits by headers (##, ###)
-- Each section → episode
-- Preserves code blocks
-- Links related sections
+Becomes:
+- Episode 1: "Installation" section
+- Episode 2: "Usage" section
 
-#### Plain Text:
-```
-This is a document about Python programming.
-Python is easy to learn and powerful.
+### CSV Format (Structured Data)
 
-Django is a web framework written in Python.
-It follows the MVC pattern.
-```
-
-**Processing:**
-- Smart chunking (~1000 chars)
-- Breaks at sentence boundaries
-- Overlapping chunks for context
-
----
-
-### 3. CSV (Structured Data)
+Import concepts and facts from CSV:
 
 ```csv
-concept,type,importance,description
-Django,framework,0.9,Python web framework with batteries included
-Flask,framework,0.8,Lightweight Python web framework
-FastAPI,framework,0.85,Modern async Python API framework
+concept,description,tags
+Hebbian Learning,Neurons that fire together wire together,"neuroscience,learning"
+HNSW,Hierarchical Navigable Small World graph,"algorithm,search"
 ```
 
-**Column mapping:**
-- Auto-detects: concept, type, importance, description, timestamp
-- Creates episode for each row
-- Imports as structured knowledge
+**Required columns:**
+- `concept` or `name` - concept name
+- `description` or `definition` - concept description
 
----
+**Optional columns:**
+- `tags` - comma-separated tags
+- `importance` - importance score (0-1)
+- `category` - concept category
 
-### 4. Code (Documentation)
+### Code Format (Source Files)
 
-#### Python Docstrings:
-```python
-def calculate_importance(data):
-    """
-    Calculate importance score based on recency and frequency.
+Import code with documentation:
 
-    Args:
-        data: Input data with timestamps
+**Supported:**
+- JavaScript/TypeScript - JSDoc comments
+- Python - docstrings
+- Java - JavaDoc
+- C++/C - Doxygen comments
+- Go - godoc comments
+- Rust - rustdoc comments
 
-    Returns:
-        float: Importance score (0-1)
-    """
-    ...
-```
+**Example (JavaScript):**
 
-#### JavaScript JSDoc:
 ```javascript
 /**
- * Build HNSW index from vectors
- * @param {Array} vectors - Array of embeddings
- * @returns {Promise<number>} Build time in seconds
+ * Calculate Hebbian weight update
+ * @param {number} pre - Pre-synaptic activation
+ * @param {number} post - Post-synaptic activation
+ * @param {number} rate - Learning rate
+ * @returns {number} Weight delta
  */
-async function buildIndex(vectors) {
-    ...
+function hebbianUpdate(pre, post, rate) {
+  return rate * pre * post;
 }
 ```
 
-**Extraction:**
-- Docstrings (Python """, JS /** */)
-- Multi-line comments
-- TODO/FIXME/NOTE comments
-- Function signatures
-
-**Supported languages:**
-- JavaScript (.js, .mjs)
-- TypeScript (.ts, .tsx)
-- Python (.py)
-- Java (.java)
-- C/C++ (.c, .cpp, .h, .hpp)
-- Go (.go)
-- Rust (.rs)
+Extracted as episode:
+- Function name: `hebbianUpdate`
+- Description: "Calculate Hebbian weight update"
+- Parameters: pre, post, rate
+- Returns: Weight delta
 
 ---
 
-## Примеры
+## Examples
 
-### Example 1: Import ChatGPT Export
+### Example 1: Import ChatGPT Conversation
 
-**Шаг 1:** Export чат из ChatGPT
-- Settings → Data controls → Export data
-- Download ZIP → extract `conversations.json`
+1. **Export** chat from ChatGPT:
+   - Settings → Data Controls → Export Data
+   - Download `conversations.json`
 
-**Шаг 2:** Import
-```bash
-npm run import:file -- ~/Downloads/conversations.json --consolidate
-```
+2. **Import** via CLI:
+   ```bash
+   npm run import:file -- ~/Downloads/conversations.json
+   ```
 
-**Результат:**
-```
-📥 Importing file: conversations.json
-   Format: JSON
-   Size: 245.67 KB
-   Parsed: 127 episodes
-   💾 Stored 127 episodes in session import-123456789
-✅ Import completed in 0.15s
-```
+3. **Or** via Dashboard:
+   - Open dashboard
+   - Drag `conversations.json` into upload zone
+   - Click "Import to Memory"
 
----
+4. **Check** import timeline to verify
 
 ### Example 2: Import Project Documentation
 
-**Структура:**
-```
-docs/
-├── README.md
-├── API.md
-├── ARCHITECTURE.md
-└── guides/
-    ├── quickstart.md
-    └── advanced.md
-```
-
-**Import:**
 ```bash
+# Import all Markdown docs recursively
 npm run import:dir -- ./docs/
+
+# With consolidation
+npm run import:dir -- ./docs/ --consolidate
 ```
 
-**Результат:**
-```
-📂 Importing directory: ./docs/
-   Found 5 files
-   Supported: 5 files
+Creates episodes for:
+- Each major section in each .md file
+- Preserves document structure
+- Tags with file path
 
-📦 Batch import: 5 files
-✅ Import completed
-   Success: 5
-   Failed: 0
-   Total episodes: 42
-```
+### Example 3: Import Code Repository
 
----
-
-### Example 3: Import Code Documentation
-
-**File:** `utils.py`
-```python
-def parse_json(content):
-    """Parse JSON with error handling."""
-    try:
-        return json.loads(content)
-    except JSONDecodeError as e:
-        # TODO: Add better error messages
-        logger.error(f"JSON parse failed: {e}")
-        return None
-```
-
-**Import:**
 ```bash
-npm run import:file -- utils.py
+# Import all Python files
+npm run import:batch -- src/**/*.py
+
+# Import all JavaScript files
+npm run import:batch -- src/**/*.js
 ```
 
-**Extracted:**
-- Docstring: "Parse JSON with error handling"
-- Comment: "TODO: Add better error messages"
+Extracts:
+- Function/class docstrings
+- Inline comments
+- Type annotations
+- Function signatures
 
----
+### Example 4: Import CSV Knowledge Base
 
-### Example 4: Import via Dashboard UI
-
-**Scenario:** Paste chat history
-
-**Text:**
-```
-User: What is Django?
-Assistant: Django is a Python web framework...
-
-User: How to install it?
-Assistant: Use pip install django...
+```csv
+concept,description,importance
+React,JavaScript UI library,0.9
+Vue,Progressive JavaScript framework,0.8
+Angular,TypeScript web framework,0.7
 ```
 
-**Steps:**
-1. Open Dashboard (http://localhost:3000)
-2. Scroll to "📥 Import Data"
-3. Paste text in textarea
-4. Click "Import"
+```bash
+npm run import:file -- knowledge-base.csv
+```
 
-**Result:**
-```
-✅ Imported 2 episodes from text
-```
+Creates nodes for each concept with:
+- Name from `concept` column
+- Description from `description` column
+- Importance weight
 
 ---
 
 ## Troubleshooting
 
-### Issue 1: "Unknown JSON format"
+### Import Fails with "Unsupported Format"
 
-**Problem:** JSON не распознан
+**Problem:** File extension not recognized
 
 **Solution:**
-- Используй generic format:
-  ```json
-  {
-    "messages": [
-      { "role": "user", "content": "...", "timestamp": "..." }
-    ]
-  }
+- Check file extension (must be `.json`, `.txt`, `.md`, `.csv`, `.js`, `.py`, etc.)
+- For generic JSON, ensure valid JSON structure
+- For text, try `.txt` or `.md` extension
+
+### Import Succeeds but No Episodes Created
+
+**Problem:** File parsed but no data extracted
+
+**Solutions:**
+- **JSON:** Check format matches one of supported chat formats
+- **Text:** File might be too small (need multiple paragraphs)
+- **CSV:** Ensure headers include `concept` or `name` column
+- **Code:** Add docstrings/comments to functions
+
+### Import Very Slow for Large Files
+
+**Problem:** File >10MB takes long time
+
+**Solutions:**
+- Split large files into smaller chunks
+- For text files, split by sections
+- For CSV, split into batches
+- Use CLI import (faster than dashboard)
+
+### Episodes Not Appearing in Graph
+
+**Problem:** Import successful but graph unchanged
+
+**Solution:**
+- Imported episodes go to **hippocampus** (episodic memory)
+- They appear in graph after **consolidation**
+- Run consolidation manually:
+  ```bash
+  npm run consolidate
   ```
+- Or wait for automatic nightly consolidation
 
----
+### Import History Shows Failures
 
-### Issue 2: "File too large"
+**Problem:** Some imports in timeline marked as failed
 
-**Problem:** Файл >50MB
-
-**Solution:**
-- Split на части
-- Или увеличь limit в `dashboard/server.js`:
-  ```javascript
-  limits: { fileSize: 100 * 1024 * 1024 } // 100MB
+**Solutions:**
+- Click on failed import to see error
+- Check file format and content
+- Verify file not corrupted
+- Check console for detailed errors:
+  ```bash
+  npm run dashboard
+  # Check terminal output
   ```
-
----
-
-### Issue 3: "Import failed - heap out of memory"
-
-**Problem:** JavaScript memory limit
-
-**Solution:**
-- Import smaller batches
-- Restart dashboard: `Ctrl+C`, `npm run dashboard`
-- **Fix в v0.4.3**
-
----
-
-### Issue 4: Text chunking too aggressive
-
-**Problem:** Документ разбит на слишком много кусков
-
-**Solution:**
-- Используй Markdown с headers (будет split по headers)
-- Или установи больший chunk size (в коде):
-  ```javascript
-  parseText(content, filePath, { chunkSize: 2000 })
-  ```
-
----
-
-### Issue 5: Code docstrings not extracted
-
-**Problem:** Docstrings не найдены
-
-**Solution:**
-- Check формат docstrings:
-  - Python: `"""..."""`
-  - JS: `/** ... */`
-- Multi-line comments должны начинаться с `/**` (не `/*`)
 
 ---
 
 ## FAQ
 
-### Q1: Какой формат лучше для чатов?
+### Q: What happens to imported data?
 
-**A:** Generic JSON format - универсальный и простой:
-```json
-{
-  "messages": [
-    { "role": "user", "content": "...", "timestamp": "..." }
-  ]
-}
-```
+**A:** Imported data becomes **episodic memories** in hippocampus:
+1. Stored in `hippocampus/sessions/import-{timestamp}.json`
+2. Indexed in daily-index
+3. Consolidated into knowledge graph during nightly consolidation
+4. Becomes nodes and edges in neocortex
 
----
+### Q: Can I import while memory is running?
 
-### Q2: Можно ли импортировать PDF?
+**A:** Yes! Import is transaction-safe:
+- Dashboard import works while dashboard is running
+- CLI import works anytime
+- Multiple imports can run concurrently
+- All use transaction manager for safety
 
-**A:** Пока нет. Используй:
-- Конвертер PDF → Text
-- Или копируй текст из PDF и вставляй в Dashboard
+### Q: How to import password-protected files?
 
-**Planned:** v0.5.0 - PDF support
+**A:** Currently not supported. Solutions:
+- Decrypt files before import
+- Convert to plain text
+- Extract relevant sections manually
 
----
+### Q: Can I undo an import?
 
-### Q3: Импорт добавляет дубликаты?
+**A:** Not directly, but you can:
+1. Check import history for import ID
+2. Find session file: `hippocampus/sessions/import-{id}.json`
+3. Delete the file manually
+4. Episodes will be removed from next consolidation
 
-**A:** Да, система не проверяет дубликаты при импорте.
+Or use graph forget function:
+1. Find nodes created by import
+2. Use dashboard "Forget" button to delete nodes
 
-**Solution:**
-- Run `npm run deduplicate` после импорта
-- Или check "Auto-consolidate" (система объединит похожие concepts)
+### Q: What's the maximum file size?
 
----
+**A:** Current limits:
+- Dashboard upload: **50MB** (configurable in server.js)
+- CLI import: **No hard limit** (limited by memory)
+- Recommended: **<10MB** per file for best performance
 
-### Q4: Что делает "Auto-consolidate"?
+For larger files:
+- Split into smaller chunks
+- Process in batches
+- Use CLI instead of dashboard
 
-**A:** После импорта сразу запускает consolidation:
-- Episodes → Concepts
-- Обновляет knowledge graph
-- Генерирует embeddings
+### Q: How to import from Notion/Obsidian/Roam?
 
-**Без auto-consolidate:**
-- Episodes сохраняются в hippocampus
-- Консолидация произойдёт ночью (или вручную)
+**A:** Export to Markdown:
 
----
+**Notion:**
+1. Export as Markdown & CSV
+2. Import .md files: `npm run import:dir -- notion-export/`
 
-### Q5: Можно ли импортировать из Google Docs?
+**Obsidian:**
+1. Already in Markdown format
+2. Import vault: `npm run import:dir -- ~/vault/`
 
-**A:** Экспортируй как:
-- Plain text (.txt)
-- Markdown (.md)
-- Затем импортируй через CLI или Dashboard
+**Roam:**
+1. Export as Markdown
+2. Import files: `npm run import:dir -- roam-export/`
 
----
+### Q: Can I import images/PDFs?
 
-### Q6: Import влияет на существующие данные?
+**A:** Not directly. Workarounds:
+- **Images:** Extract text with OCR, save as .txt, import
+- **PDFs:** Convert to text with pdf2txt, import .txt
 
-**A:** Нет, импорт только **добавляет** новые episodes.
-Существующий knowledge graph не изменяется напрямую.
+Support for these formats may be added in future versions.
 
----
+### Q: How to automate imports?
 
-### Q7: Сколько времени занимает импорт?
+**A:** Use CLI in scripts:
 
-**A:**
-- Small files (<1MB): <1s
-- Medium (1-10MB): 1-5s
-- Large (10-50MB): 5-20s
-- **With consolidation:** +30-60s
-
----
-
-### Q8: Можно ли импортировать во время работы Claude Code?
-
-**A:** Да, безопасно! Import использует transactions.
-
----
-
-### Q9: Как проверить что импорт прошёл?
-
-**A:**
 ```bash
-# Check import history
-npm run import:history
+#!/bin/bash
+# daily-import.sh - Import daily notes
 
-# Check sessions
-ls hippocampus/sessions/import-*.json
+# Import today's journal
+npm run import:file -- ~/notes/$(date +%Y-%m-%d).md --consolidate
 
-# Check stats
-npm run stats
+# Import new docs
+npm run import:dir -- ~/documents/recent/
 ```
+
+Schedule with cron (Linux/Mac) or Task Scheduler (Windows).
 
 ---
 
-### Q10: Можно ли откатить импорт?
+## Need Help?
 
-**A:** Да:
-1. Find session ID в import history
-2. Delete session file:
-   ```bash
-   rm hippocampus/sessions/import-XXXXXXXXX.json
-   ```
-3. Remove from daily-index.json
-
-**Planned:** v0.4.3 - undo import command
-
----
-
-## 🎓 Best Practices
-
-### 1. Organize imports
-```bash
-# Create import folder
-mkdir imports/
-
-# Organize by source
-imports/
-├── chatgpt/
-├── claude/
-├── docs/
-└── code/
-```
-
-### 2. Use auto-consolidate for small imports
-- <100 episodes: ✅ Auto-consolidate
-- >100 episodes: ❌ Manual consolidation (ночью)
-
-### 3. Import code selectively
-- Import files with **good documentation**
-- Skip auto-generated code
-- Focus on core modules
-
-### 4. Batch imports during off-hours
-- Large imports → запускай ночью
-- Меньше нагрузка на систему
-
-### 5. Check import history regularly
-```bash
-npm run import:history
-```
-
-### 6. Consolidate after large imports
-```bash
-npm run import:dir -- ./docs/
-npm run consolidate  # Manual consolidation
-```
-
----
-
-## 🔗 См. также
-
-- [USER-GUIDE.md](USER-GUIDE.md) - Основное руководство
-- [API-REFERENCE.md](API-REFERENCE.md) - API документация
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Решение проблем
-
----
-
-**OpenClaw Memory v0.4.2**
-*Import Guide*
-*Last updated: 12 апреля 2026*
+- 📚 Check [Troubleshooting Guide](TROUBLESHOOTING.md)
+- 🔧 See [API Reference](API-REFERENCE.md)
+- 💬 Open an issue on [GitHub](https://github.com/botrozovsky-droid/NMS/issues)
