@@ -35,7 +35,7 @@ This hook captures all conversation events and stores them in NMS for:
 
 ## Storage Location
 
-All data is stored in: `~/.openclaw/memory/`
+All data is stored in: `~/.nms/`
 
 ## Features
 

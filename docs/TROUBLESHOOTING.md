@@ -526,7 +526,7 @@ const memoryRoot = process.env.MEMORY_ROOT || path.join(dirname(__dirname));
 
 Set `MEMORY_ROOT` in `.env` if needed:
 ```bash
-echo "MEMORY_ROOT=C:/Users/Vlad/.openclaw/memory" >> .env
+echo "MEMORY_ROOT=~/.nms" >> .env
 ```
 
 **3. API endpoints not responding:**

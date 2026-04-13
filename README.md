@@ -144,7 +144,7 @@ A long-term memory system for AI that works like the human brain. Implements:
 ## 📁 File Structure
 
 ```
-~/.openclaw/memory/
+~/.nms/
 ├── hippocampus/
 │   ├── sessions/               # Episodes by sessions
 │   │   └── {sessionId}.json

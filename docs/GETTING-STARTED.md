@@ -299,7 +299,7 @@ npm run search:benchmark
 OpenClaw is designed to work with Claude Code for persistent memory across sessions.
 
 **Setup:**
-1. Place OpenClaw in `~/.openclaw/memory/`
+1. Place OpenClaw in `~/.nms/`
 2. Claude Code automatically records tool calls and messages
 3. Run consolidation nightly or after each session
 4. Query previous conversations anytime

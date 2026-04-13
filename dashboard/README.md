@@ -10,7 +10,7 @@
 ## 🚀 Быстрый старт
 
 ```bash
-cd ~/.openclaw/memory
+cd ~/.nms
 npm run dashboard
 ```
 
