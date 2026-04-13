@@ -1,0 +1,81 @@
+{
+  "concepts": [
+    {
+      "name": "config.json",
+      "type": "configuration_file",
+      "importance": 0.7,
+      "extraction_type": "EXTRACTED",
+      "confidence": 1.0,
+      "rationale": "Explicitly mentioned in event '96025fb6' as 'context.file': 'config.json'",
+      "canonical_form": "config.json",
+      "aliases": [
+        "config.json"
+      ]
+    },
+    {
+      "name": "read operation",
+      "type": "file_operation",
+      "importance": 0.7,
+      "extraction_type": "EXTRACTED",
+      "confidence": 1.0,
+      "rationale": "Explicitly mentioned in event '96025fb6' as 'context.operation': 'read'",
+      "canonical_form": "read_operation",
+      "aliases": [
+        "read"
+      ]
+    },
+    {
+      "name": "write tool",
+      "type": "system_tool",
+      "importance": 0.7,
+      "extraction_type": "EXTRACTED",
+      "confidence": 1.0,
+      "rationale": "Explicitly mentioned in event '29c0fa6b' as 'toolName': 'Write'",
+      "canonical_form": "write_tool",
+      "aliases": [
+        "Write"
+      ]
+    },
+    {
+      "name": "/src/main.py",
+      "type": "source_code_file",
+      "importance": 0.8,
+      "extraction_type": "EXTRACTED",
+      "confidence": 1.0,
+      "rationale": "Explicitly mentioned in event '29c0fa6b' as 'args.file_path': '/src/main.py' and 'filesModified': ['/src/main.py']",
+      "canonical_form": "/src/main.py",
+      "aliases": [
+        "/src/main.py"
+      ]
+    },
+    {
+      "name": "python",
+      "type": "programming_language",
+      "importance": 0.9,
+      "extraction_type": "EXTRACTED",
+      "confidence": 1.0,
+      "rationale": "Explicitly mentioned in event '2756286c' as 'message': 'Используй Python' and in event '4572bfb8' as 'context.language': 'Python'",
+      "canonical_form": "python",
+      "aliases": [
+        "Python"
+      ]
+    },
+    {
+      "name": "javascript",
+      "type": "programming_language",
+      "importance": 0.8,
+      "extraction_type": "EXTRACTED",
+      "confidence": 1.0,
+      "rationale": "Explicitly mentioned in event '2756286c' as 'message': 'не JavaScript'",
+      "canonical_form": "javascript",
+      "aliases": [
+        "JavaScript"
+      ]
+    },
+    {
+      "name": "fastapi",
+      "type": "library_module",
+      "importance": 0.9,
+      "extraction_type": "EXTRACTED",
+      "confidence": 1.0,
+      "rationale": "Explicitly mentioned

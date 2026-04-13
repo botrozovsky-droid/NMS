@@ -1,0 +1,25 @@
+{
+  "source": "Test Import",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What is Django?",
+      "timestamp": "2024-01-15T10:00:00Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Django is a high-level Python web framework that encourages rapid development and clean, pragmatic design. It follows the model-template-views architectural pattern and includes features like an ORM, authentication, and admin interface.",
+      "timestamp": "2024-01-15T10:00:05Z"
+    },
+    {
+      "role": "user",
+      "content": "How do I install Django?",
+      "timestamp": "2024-01-15T10:01:00Z"
+    },
+    {
+      "role": "assistant",
+      "content": "You can install Django using pip: 'pip install django'. After installation, you can create a new project with 'django-admin startproject myproject'. Django requires Python 3.8 or higher.",
+      "timestamp": "2024-01-15T10:01:05Z"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "created": "2026-04-10T14:12:00.000Z",
+  "lastUpdated": "2026-04-10T14:12:00.000Z",
+  "patterns": {
+    "test_pattern": {
+      "id": "ddf7fb87-fd51-4247-8f3a-3eae05f7977b",
+      "name": "test_pattern",
+      "action": {
+        "type": "test"
+      },
+      "executions": 7,
+      "successes": 7,
+      "failures": 0,
+      "lastUsed": 1775990645205,
+      "weight": 0.7999999999999999,
+      "created": 1775819766879
+    }
+  },
+  "sequences": {},
+  "statistics": {
+    "totalPatterns": 1,
+    "totalExecutions": 7,
+    "averageSuccessRate": 1
+  },
+  "metadata": {
+    "learningRate": 0.1,
+    "decayHalfLife": 2592000000,
+    "minActivations": 3
+  },
+  "description": "Procedural memory - learned action patterns and sequences"
+}

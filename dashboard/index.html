@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NMS - Neurobiological Memory System</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            // Dark theme (engineering)
+            dark: {
+              bg: '#0d1117',
+              panel: '#161b22',
+              border: '#30363d',
+              text: '#c9d1d9',
+              muted: '#8b949e',
+              accent: '#58a6ff',
+            },
+            // Light theme (laboratory)
+            light: {
+              bg: '#ffffff',
+              panel: '#f6f8fa',
+              border: '#d0d7de',
+              text: '#24292f',
+              muted: '#57606a',
+              accent: '#0969da',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- D3.js for graph visualization -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <!-- Custom styles -->
+  <style>
+    /* CSS Variables for theming */
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --border-color: #30363d;
+      --text-primary: #c9d1d9;
+      --text-muted: #8b949e;
+      --accent-color: #58a6ff;
+    }
+
+    :root.light {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f6f8fa;
+      --border-color: #d0d7de;
+      --text-primary: #24292f;
+      --text-muted: #57606a;
+      --accent-color: #0969da;
+    }
+
+    /* Apply variables */
+    body {
+      background-color: var(--bg-primary) !important;
+      color: var(--text-primary) !important;
+    }
+
+    .bg-dark-panel {
+      background-color: var(--bg-secondary) !important;
+    }
+
+    .bg-dark-bg {
+      background-color: var(--bg-primary) !important;
+    }
+
+    .border-dark-border {
+      border-color: var(--border-color) !important;
+    }
+
+    .text-dark-text {
+      color: var(--text-primary) !important;
+    }
+
+    .text-dark-muted {
+      color: var(--text-muted) !important;
+    }
+
+    .text-dark-accent {
+      color: var(--accent-color) !important;
+    }
+
+    .hover\:bg-dark-bg:hover {
+      background-color: var(--bg-primary) !important;
+    }
+
+    .hover\:bg-dark-border:hover {
+      background-color: var(--border-color) !important;
+    }
+
+    .hover\:border-dark-accent:hover {
+      border-color: var(--accent-color) !important;
+    }
+
+    /* D3 Graph */
+    .node {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .node:hover {
+      filter: brightness(1.3);
+    }
+    .node.highlighted {
+      stroke: #fbbf24;
+      stroke-width: 3px;
+    }
+    .link {
+      stroke: var(--border-color);
+      stroke-opacity: 0.6;
+    }
+    .link.highlighted {
+      stroke: #fbbf24;
+      stroke-opacity: 1;
+      stroke-width: 2px;
+    }
+    .node-label {
+      font-size: 11px;
+      fill: var(--text-primary);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* Transitions */
+    * {
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+  </style>
+</head>
+<body class="dark bg-dark-bg text-dark-text">
+  <div class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-dark-panel border-b border-dark-border px-6 py-3 flex items-center justify-between">
+      <!-- Logo & Title -->
+      <div class="flex items-center gap-3">
+        <div class="text-2xl">🧠</div>
+        <div>
+          <h1 class="text-xl font-semibold text-dark-accent">NMS</h1>
+          <p class="text-xs text-dark-muted">Neurobiological Memory System v0.5.2</p>
+        </div>
+      </div>
+
+      <!-- Search Bar (Center) -->
+      <div class="flex-1 max-w-2xl mx-8">
+        <div class="relative">
+          <input
+            type="text"
+            id="headerSearch"
+            placeholder="Search concepts, episodes, or patterns..."
+            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-dark-accent focus:border-transparent"
+          />
+          <button id="headerSearchBtn" class="absolute right-2 top-1/2 -translate-y-1/2 text-dark-muted hover:text-dark-accent">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Actions -->
+      <div class="flex items-center gap-4">
+        <!-- Stats Badge -->
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-dark-bg rounded-lg border border-dark-border">
+          <span class="text-xs text-dark-muted">Nodes:</span>
+          <span id="header-nodes" class="text-sm font-semibold text-dark-accent">-</span>
+          <span class="text-dark-border">|</span>
+          <span class="text-xs text-dark-muted">Edges:</span>
+          <span id="header-edges" class="text-sm font-semibold text-dark-accent">-</span>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="themeToggle" class="p-2 rounded-lg hover:bg-dark-bg border border-dark-border" title="Toggle theme">
+          <!-- Moon icon (dark mode active) -->
+          <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+          <!-- Sun icon (light mode active) - hidden initially -->
+          <svg id="sunIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex flex-1 overflow-hidden">
+
+      <!-- Left: Graph Visualization (60%) -->
+      <div class="flex-[3] flex flex-col bg-dark-panel border-r border-dark-border m-4 mr-2 rounded-lg overflow-hidden">
+        <!-- Graph Header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+          <h2 class="text-lg font-semibold">Knowledge Graph</h2>
+          <div class="flex gap-2">
+            <button id="resetZoom" class="px-3 py-1.5 text-sm bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">
+              Reset View
+            </button>
+            <button id="refreshGraph" class="px-3 py-1.5 text-sm bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Graph Container -->
+        <div id="graph-container" class="flex-1 bg-dark-bg relative"></div>
+
+        <!-- Graph Legend -->
+        <div class="flex items-center justify-center gap-6 px-4 py-2 border-t border-dark-border text-xs text-dark-muted">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+            <span>Nodes (concepts)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-0.5 bg-dark-border"></div>
+            <span>Edges (relationships)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Control Panel (40%) -->
+      <div class="flex-[2] flex flex-col gap-4 p-4 pl-2 overflow-y-auto">
+
+        <!-- Health Dashboard -->
+        <section class="bg-dark-panel border border-dark-border rounded-lg p-4">
+          <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+            <span>💊</span>
+            <span>Memory Health</span>
+          </h3>
+          <div class="space-y-3">
+            <!-- Overall Health -->
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-dark-muted">Overall Health</span>
+                <span id="healthScore" class="font-semibold text-green-500">-</span>
+              </div>
+              <div class="w-full bg-dark-bg rounded-full h-2">
+                <div id="healthBar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Issues -->
+            <div id="healthIssues" class="space-y-2">
+              <!-- Populated by JS -->
+            </div>
+
+            <!-- Actions -->
+            <button id="runHealthCheck" class="w-full px-3 py-2 text-sm bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">
+              Run Health Check
+            </button>
+          </div>
+        </section>
+
+        <!-- Statistics -->
+        <section class="bg-dark-panel border border-dark-border rounded-lg p-4">
+          <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+            <span>📊</span>
+            <span>Memory Statistics</span>
+          </h3>
+
+          <!-- Memory Layers -->
+          <div class="space-y-3 mb-4">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-dark-muted">Hippocampus (Short-term)</span>
+                <span id="stat-hippocampus" class="font-semibold">-</span>
+              </div>
+              <div class="text-xs text-dark-muted">Recent episodes awaiting consolidation</div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-dark-muted">Neocortex (Long-term)</span>
+                <span id="stat-neocortex" class="font-semibold">-</span>
+              </div>
+              <div class="w-full bg-dark-bg rounded-full h-2 mb-1">
+                <div id="stat-neocortex-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+              <div class="text-xs text-dark-muted">Memory utilization: <span id="stat-utilization">-</span> of 1000 nodes</div>
+            </div>
+          </div>
+
+          <!-- Graph Metrics -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-dark-bg rounded-lg p-3 text-center">
+              <div class="text-xs text-dark-muted mb-1">Density</div>
+              <div id="stat-density" class="text-lg font-semibold text-dark-accent">-</div>
+            </div>
+            <div class="bg-dark-bg rounded-lg p-3 text-center">
+              <div class="text-xs text-dark-muted mb-1">Search</div>
+              <div id="stat-hnsw" class="text-sm font-semibold">-</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Import -->
+        <section class="bg-dark-panel border border-dark-border rounded-lg p-4">
+          <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+            <span>📥</span>
+            <span>Quick Import</span>
+          </h3>
+          <div class="space-y-3">
+            <!-- File Upload -->
+            <div>
+              <label class="block">
+                <input type="file" id="fileInput" class="hidden" accept=".json,.txt,.md,.csv,.js,.py,.ts,.mjs,.java,.cpp,.c,.go,.rs" multiple>
+                <div id="dropZone" class="w-full px-4 py-8 border-2 border-dashed border-dark-border rounded-lg text-center cursor-pointer hover:border-dark-accent hover:bg-dark-bg transition-colors">
+                  <svg class="mx-auto mb-2 text-dark-muted" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <p class="text-sm text-dark-muted">Drop files here or click to browse</p>
+                  <p class="text-xs text-dark-muted mt-1">Supports: JSON, TXT, MD, CSV, Code files</p>
+                </div>
+              </label>
+              <div id="fileList" class="mt-2 space-y-1"></div>
+
+              <!-- Progress Bar -->
+              <div id="importProgress" class="hidden mt-3">
+                <div class="flex items-center justify-between text-xs text-dark-muted mb-1">
+                  <span id="progressText">Importing...</span>
+                  <span id="progressPercent">0%</span>
+                </div>
+                <div class="w-full h-2 bg-dark-bg rounded-full overflow-hidden">
+                  <div id="progressBar" class="h-full bg-dark-accent transition-all duration-300" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Import Button -->
+            <button id="importBtn" class="w-full px-4 py-2 bg-dark-accent hover:bg-blue-600 text-white rounded-lg transition-colors font-medium">
+              Import to Memory
+            </button>
+
+            <!-- Status -->
+            <div id="importStatus" class="text-sm text-dark-muted"></div>
+          </div>
+        </section>
+
+        <!-- Import Timeline (Collapsed by default) -->
+        <section class="bg-dark-panel border border-dark-border rounded-lg p-4">
+          <button id="toggleTimeline" class="w-full flex items-center justify-between text-sm font-semibold">
+            <span class="flex items-center gap-2">
+              <span>📅</span>
+              <span>Import Timeline</span>
+            </span>
+            <svg id="timelineChevron" class="transition-transform" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div id="timelineContent" class="hidden mt-3">
+            <div id="timelineList" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            <div id="timelineEmpty" class="text-xs text-dark-muted text-center py-4">
+              No imports yet
+            </div>
+          </div>
+        </section>
+
+        <!-- Search Filters (Collapsed by default) -->
+        <section class="bg-dark-panel border border-dark-border rounded-lg p-4">
+          <button id="toggleFilters" class="w-full flex items-center justify-between text-sm font-semibold">
+            <span class="flex items-center gap-2">
+              <span>🔍</span>
+              <span>Search Filters</span>
+            </span>
+            <svg id="filtersChevron" class="transition-transform" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div id="filtersContent" class="hidden mt-3 space-y-2">
+            <div class="flex flex-wrap gap-2">
+              <button class="filter-btn px-3 py-1 text-xs bg-dark-bg border border-dark-border rounded-full hover:border-dark-accent transition-colors active">All</button>
+              <button class="filter-btn px-3 py-1 text-xs bg-dark-bg border border-dark-border rounded-full hover:border-dark-accent transition-colors">High Weight</button>
+              <button class="filter-btn px-3 py-1 text-xs bg-dark-bg border border-dark-border rounded-full hover:border-dark-accent transition-colors">Recent</button>
+              <button class="filter-btn px-3 py-1 text-xs bg-dark-bg border border-dark-border rounded-full hover:border-dark-accent transition-colors">Low Confidence</button>
+              <button class="filter-btn px-3 py-1 text-xs bg-dark-bg border border-dark-border rounded-full hover:border-dark-accent transition-colors">Many Links</button>
+            </div>
+            <div id="searchResults" class="mt-3 space-y-2 max-h-64 overflow-y-auto"></div>
+          </div>
+        </section>
+
+        <!-- Top Concepts (Collapsed by default) -->
+        <section class="bg-dark-panel border border-dark-border rounded-lg p-4">
+          <button id="toggleTopConcepts" class="w-full flex items-center justify-between text-sm font-semibold">
+            <span class="flex items-center gap-2">
+              <span>🏆</span>
+              <span>Top Concepts</span>
+            </span>
+            <svg id="topConceptsChevron" class="transition-transform" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div id="topConceptsContent" class="hidden mt-3">
+            <div id="topConcepts" class="space-y-2 max-h-96 overflow-y-auto">
+              <!-- Populated by JS -->
+              <div class="text-sm text-dark-muted text-center py-4">Loading...</div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Node Details Modal -->
+  <div id="nodeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-dark-panel border border-dark-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-dark-border">
+        <h2 id="modalTitle" class="text-lg font-semibold">Node Details</h2>
+        <button id="closeModal" class="text-dark-muted hover:text-dark-text transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Tabs -->
+      <div class="flex border-b border-dark-border px-6">
+        <button class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-dark-accent text-dark-accent" data-tab="overview">Overview</button>
+        <button class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-dark-muted hover:text-dark-text transition-colors" data-tab="sources">Sources</button>
+        <button class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-dark-muted hover:text-dark-text transition-colors" data-tab="connections">Connections</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div id="modalBody" class="flex-1 overflow-y-auto p-6"></div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-2 px-6 py-4 border-t border-dark-border">
+        <button class="px-4 py-2 text-sm bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">Export</button>
+        <button class="px-4 py-2 text-sm bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">Edit</button>
+        <div class="flex-1"></div>
+        <button id="forgetBtn" class="px-4 py-2 text-sm bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg transition-colors flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Forget
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
