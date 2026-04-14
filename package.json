@@ -1,7 +1,7 @@
 {
   "name": "openclaw-memory",
-  "version": "0.7.0",
-  "description": "Neurobiological memory system with SQLite storage, multi-mode setup, HNSW vector search, modern web dashboard, OpenClaw integration, import capabilities, transactions, Obsidian export, and contradiction detection",
+  "version": "0.8.0",
+  "description": "Neurobiological memory system with SQLite storage, semantic anchors (ganglia), multi-mode setup, HNSW vector search, modern web dashboard, OpenClaw integration, import capabilities, transactions, Obsidian export, and contradiction detection",
   "type": "module",
   "main": "memory-manager.js",
   "scripts": {
@@ -13,13 +13,14 @@
     "stats": "node memory-manager.js stats",
     "recall": "node memory-manager.js recall",
     "query": "node memory-manager.js query",
-    "test": "node tests/test-memory.js && node tests/test-v0.2.js && node tests/test-semantic-search.js && node tests/test-transactions.js && node tests/test-session-consolidation.js && node tests/test-v0.3.3.js",
+    "test": "node tests/test-memory.js && node tests/test-v0.2.js && node tests/test-semantic-search.js && node tests/test-transactions.js && node tests/test-session-consolidation.js && node tests/test-v0.3.3.js && node tests/test-ganglia.js",
     "test:v02": "node tests/test-v0.2.js",
     "test:v03:semantic": "node tests/test-semantic-search.js",
     "test:v03:transactions": "node tests/test-transactions.js",
     "test:v03:sessions": "node tests/test-session-consolidation.js",
     "test:v03:export": "node tests/test-v0.3.3.js",
     "test:v03": "node tests/test-semantic-search.js && node tests/test-transactions.js && node tests/test-session-consolidation.js && node tests/test-v0.3.3.js",
+    "test:ganglia": "node tests/test-ganglia.js",
     "deduplicate": "node canonical-forms.js",
     "check-quality": "node hallucination-detector.js",
     "fix-quality": "node hallucination-detector.js --fix",
@@ -40,7 +41,13 @@
     "import:history": "node src/import-manager.js history",
     "dashboard": "node dashboard/server.js",
     "sync:openclaw": "node sync-openclaw-sessions.js",
-    "fix:orphaned-links": "node fix-orphaned-links.js"
+    "fix:orphaned-links": "node fix-orphaned-links.js",
+    "ganglia:create": "node scripts/ganglia.js create",
+    "ganglia:list": "node scripts/ganglia.js list",
+    "ganglia:show": "node scripts/ganglia.js show",
+    "ganglia:delete": "node scripts/ganglia.js delete",
+    "ganglia:stats": "node scripts/ganglia.js stats",
+    "ganglia:link": "node scripts/link-to-ganglia.js"
   },
   "dependencies": {
     "axios": "^1.6.0",

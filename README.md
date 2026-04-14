@@ -1,7 +1,7 @@
 # 🧠 OpenClaw NMS (Neurobiological Memory System)
 
 **Neurobiological AI Memory System**
-**Version:** 0.6.0
+**Version:** 0.8.0
 **Date:** 2026-04-14
 **Status:** ✅ Production Ready
 
@@ -35,6 +35,30 @@ A long-term memory system for AI that works like the human brain. Implements:
 ---
 
 ## 🎨 What's New
+
+### v0.8.0 - Ganglia (Semantic Anchors) (April 2026) 🎯
+
+**Proactive knowledge structuring with AI-enriched semantic anchors!**
+
+- 🧠 **Ganglia** - Manually create high-value nodes that attract related knowledge
+- 🤖 **Interactive Enrichment** - AI generates contextual questions to understand your intent
+- 🔗 **Automatic Attraction** - Semantic similarity auto-links new nodes to ganglia
+- 💪 **Decay Protection** - Ganglia maintain minimum weight, immune to forgetting
+- 🏥 **Health Monitoring** - Detects and flags "bloated" ganglia (spam connections)
+- 📊 **CLI Tools** - Create, list, show, delete, and analyze ganglia
+- [📖 Full Documentation](docs/GANGLIA.md)
+
+### v0.7.0 - SQLite Storage Migration (April 2026) 🗄️
+
+**Scalable storage for 50K+ nodes!**
+
+- ⚡ **71% smaller** storage (59MB → 17MB)
+- 🚀 **4-7x faster** read/write operations
+- 🔍 **Indexed queries** - O(log n) vs O(n)
+- 🔄 **Backward compatible** - Auto-detects JSON or SQLite
+- 🔐 **ACID transactions** - Data integrity built-in
+- 📦 **One-command migration** - `npm run migrate`
+- [📊 Migration Report](MIGRATION-REPORT.md)
 
 ### v0.6.0 - Multi-Mode Setup & OpenClaw Integration (April 2026) 🔧
 
