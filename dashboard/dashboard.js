@@ -1640,13 +1640,34 @@ function openEditModal(ganglia) {
   document.getElementById('editWeightValue').textContent = ganglia.weight.toFixed(1);
   document.getElementById('editGangliaContext').value = ganglia.metadata.context || '';
 
-  // Set expertise radio
-  const expertise = ganglia.metadata.expertise_level || 'beginner';
-  document.querySelector(`input[name="editExpertise"][value="${expertise}"]`).checked = true;
+  // Set expertise radio (map Russian to English)
+  let expertise = ganglia.metadata.expertise_level || 'beginner';
+  const expertiseMap = {
+    'новичок': 'beginner',
+    'средний': 'intermediate',
+    'эксперт': 'expert'
+  };
+  expertise = expertiseMap[expertise] || expertise;
+
+  const expertiseRadio = document.querySelector(`input[name="editExpertise"][value="${expertise}"]`);
+  if (expertiseRadio) {
+    expertiseRadio.checked = true;
+  } else {
+    // Default to beginner if not found
+    const defaultRadio = document.querySelector(`input[name="editExpertise"][value="beginner"]`);
+    if (defaultRadio) defaultRadio.checked = true;
+  }
 
   // Set horizon radio
   const horizon = ganglia.metadata.horizon || 'long-term';
-  document.querySelector(`input[name="editHorizon"][value="${horizon}"]`).checked = true;
+  const horizonRadio = document.querySelector(`input[name="editHorizon"][value="${horizon}"]`);
+  if (horizonRadio) {
+    horizonRadio.checked = true;
+  } else {
+    // Default to long-term if not found
+    const defaultRadio = document.querySelector(`input[name="editHorizon"][value="long-term"]`);
+    if (defaultRadio) defaultRadio.checked = true;
+  }
 
   // Load tags
   editGangliaTags.subtopics = ganglia.metadata.subtopics || [];
