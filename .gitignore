@@ -98,3 +98,8 @@ MODULE-GUIDE.md
 COMPETITIVE-ANALYSIS.md
 MIGRATION-TO-GEMINI.md
 LIMITATIONS.md
+
+# SQLite databases (contain sensitive data)
+*.sqlite
+*.sqlite3
+*.db
