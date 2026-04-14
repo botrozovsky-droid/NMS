@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "created": "2026-04-10T14:12:00.000Z",
+  "lastUpdated": "2026-04-12T10:44:05.204Z",
+  "preferences": {
+    "editor": {
+      "value": "vscode",
+      "confidence": 0.9,
+      "lastUpdated": 1775990645204,
+      "updateCount": 7
+    }
+  },
+  "statistics": {
+    "totalPreferences": 1,
+    "totalUpdates": 7
+  },
+  "description": "User preferences learned from interactions - implicit knowledge"
+}

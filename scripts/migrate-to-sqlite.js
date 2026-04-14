@@ -35,7 +35,8 @@ async function createBackup() {
 
   filesToBackup.forEach(file => {
     if (existsSync(file)) {
-      const backupFile = join(BACKUP_DIR, file.replace(/\//g, '_'));
+      const fileName = file.split(/[/\\]/).pop();
+      const backupFile = join(BACKUP_DIR, fileName);
       copyFileSync(file, backupFile);
       console.log(`  ✓ Backed up: ${file}`);
     }
@@ -95,8 +96,10 @@ async function migrateEpisodes(db) {
     const sessionPath = join(sessionsDir, sessionFile);
     const sessionData = await loadJSON(sessionPath);
 
+    const sessionId = sessionData.sessionId || sessionFile.replace('.json', '');
+
     if (sessionData.episodes && sessionData.episodes.length > 0) {
-      db.saveEpisodes(sessionData.sessionId, sessionData.episodes);
+      db.saveEpisodes(sessionId, sessionData.episodes);
       totalEpisodes += sessionData.episodes.length;
     }
   }
