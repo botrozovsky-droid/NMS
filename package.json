@@ -1,7 +1,7 @@
 {
   "name": "openclaw-memory",
-  "version": "0.6.0",
-  "description": "Neurobiological memory system with multi-mode setup, HNSW vector search, modern web dashboard, OpenClaw integration, import capabilities, transactions, Obsidian export, and contradiction detection",
+  "version": "0.7.0",
+  "description": "Neurobiological memory system with SQLite storage, multi-mode setup, HNSW vector search, modern web dashboard, OpenClaw integration, import capabilities, transactions, Obsidian export, and contradiction detection",
   "type": "module",
   "main": "memory-manager.js",
   "scripts": {
