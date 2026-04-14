@@ -1,8 +1,8 @@
 # 🧠 OpenClaw NMS (Neurobiological Memory System)
 
 **Neurobiological AI Memory System**
-**Version:** 0.5.2
-**Date:** 2026-04-13
+**Version:** 0.6.0
+**Date:** 2026-04-14
 **Status:** ✅ Production Ready
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -35,6 +35,38 @@ A long-term memory system for AI that works like the human brain. Implements:
 ---
 
 ## 🎨 What's New
+
+### v0.6.0 - Multi-Mode Setup & OpenClaw Integration (April 2026) 🔧
+
+**Flexible installation system with multiple modes!**
+
+- 🎯 **Multi-Mode Setup** - Choose how to install NMS:
+  - 🏠 **Standalone** - Independent memory system with CLI + Dashboard
+  - 🔗 **OpenClaw Addon** - Auto-capture OpenClaw conversations with hook integration
+  - 🎛️ **Custom** - Install to any location
+- 🔍 **Auto-Detection** - Automatically detects OpenClaw and Claude Code installations
+- 💡 **Smart Recommendations** - Suggests best installation mode based on environment
+- 🔌 **Hook Installer** - Automatic OpenClaw hook installation for seamless integration
+- 📋 **Installation Config** - Tracks installation mode and integrations in `meta/installation.json`
+- ✨ **Improved Setup Flow** - Interactive, user-friendly installation process
+
+**Installation Modes:**
+```bash
+npm run setup
+
+# Automatically detects your environment and suggests:
+# - Standalone mode (if no OpenClaw detected)
+# - OpenClaw Addon mode (if OpenClaw found) ← Recommended
+# - Custom mode (manual path selection)
+```
+
+**OpenClaw Integration:**
+- Automatic hook installation to `~/.openclaw/agents/main/hooks/nms-integration/`
+- Auto-capture all conversations, tool calls, and session events
+- Session-end consolidation for immediate memory availability
+- Seamless sync with existing OpenClaw sessions
+
+---
 
 ### v0.5.2 - Modern Dashboard UI (April 2026) 🎨
 
@@ -188,25 +220,50 @@ cd NMS
 # Install dependencies
 npm install
 
-# Interactive setup
+# Interactive setup (auto-detects your environment)
 npm run setup
 ```
 
-### 2. Configuration
+**Setup will:**
+1. Detect OpenClaw/Claude Code installations
+2. Suggest best installation mode
+3. Configure API keys
+4. Install OpenClaw hook (if Addon mode)
+5. Create necessary directories and configs
 
-Create `.env` file:
+### 2. Installation Modes
 
+#### 🏠 Standalone Mode
+Independent memory system for personal use
 ```bash
-# Copy template
-cp .env.example .env
-
-# Add your Gemini API key
-GEMINI_API_KEY=your_api_key_here
+# Installs to: ~/.nms/
+# Features: CLI + Dashboard + Manual Import
 ```
 
-Get API key: https://makersuite.google.com/app/apikey
+#### 🔗 OpenClaw Addon Mode (Recommended if OpenClaw installed)
+Automatic conversation capture with OpenClaw integration
+```bash
+# Installs to: ~/.openclaw/memory/
+# Features: Auto-capture + Hook + Dashboard + CLI
+# Hook location: ~/.openclaw/agents/main/hooks/nms-integration/
+```
 
-### 3. Launch Dashboard
+#### 🎛️ Custom Mode
+Choose your own installation path
+```bash
+# Installs to: <your-path>
+# Features: Same as Standalone
+```
+
+### 3. Configuration
+
+Setup wizard will guide you through:
+- ✅ Gemini API key configuration (get from: https://makersuite.google.com/app/apikey)
+- ✅ Model selection (gemini-1.5-flash or gemini-1.5-pro)
+- ✅ Directory structure initialization
+- ✅ Hook installation (OpenClaw Addon mode)
+
+### 4. Launch Dashboard
 
 ```bash
 npm run dashboard
