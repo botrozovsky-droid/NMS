@@ -40,6 +40,7 @@ async function init() {
   setupModal();
   setupHnswToggle();
   setupGangliaModal();
+  setupGangliaEditModal();
 
   // Render visualizations
   renderGraph();
@@ -1566,7 +1567,9 @@ async function toggleSearchMode() {
 
 let gangliaQuestions = [];
 let gangliaAnswers = {};
-let gangliaTags = {}; // Store tags for subtopics and relations
+let gangliaTags = {}; // Store tags for subtopics and relations (create)
+let editGangliaTags = {}; // Store tags for editing
+let currentEditingGanglia = null;
 
 async function loadGangliaList() {
   try {
@@ -1617,18 +1620,175 @@ async function showGangliaDetails(gangliaId) {
 
     if (!data.success) throw new Error(data.error);
 
-    const g = data.ganglia;
-    showNotification(`
-      <strong>${g.name}</strong> (${g.type})<br>
-      Weight: ${g.weight.toFixed(2)} | Connections: ${g.edges.length}<br>
-      Context: ${g.metadata.context} | Horizon: ${g.metadata.horizon}<br>
-      Health: ${g.health.status.toUpperCase()}
-    `, 'info');
+    currentEditingGanglia = data.ganglia;
+    openEditModal(data.ganglia);
 
   } catch (error) {
     console.error('Show ganglia error:', error);
     showNotification(`Failed to load details: ${error.message}`, 'error');
   }
+}
+
+function openEditModal(ganglia) {
+  const modal = document.getElementById('gangliaEditModal');
+
+  // Fill form
+  document.getElementById('editGangliaName').value = ganglia.name;
+  document.getElementById('editGangliaType').value = ganglia.type;
+  document.getElementById('editGangliaDescription').value = ganglia.metadata.description || '';
+  document.getElementById('editGangliaWeight').value = ganglia.weight;
+  document.getElementById('editWeightValue').textContent = ganglia.weight.toFixed(1);
+  document.getElementById('editGangliaContext').value = ganglia.metadata.context || '';
+
+  // Set expertise radio
+  const expertise = ganglia.metadata.expertise_level || 'beginner';
+  document.querySelector(`input[name="editExpertise"][value="${expertise}"]`).checked = true;
+
+  // Set horizon radio
+  const horizon = ganglia.metadata.horizon || 'long-term';
+  document.querySelector(`input[name="editHorizon"][value="${horizon}"]`).checked = true;
+
+  // Load tags
+  editGangliaTags.subtopics = ganglia.metadata.subtopics || [];
+  editGangliaTags.relations = ganglia.metadata.related_projects || [];
+  renderEditTags('subtopics');
+  renderEditTags('relations');
+
+  // Show connection info
+  document.getElementById('editConnectionsInfo').textContent =
+    `${ganglia.edges.length} connections will be preserved`;
+
+  // Open modal
+  modal.classList.remove('hidden');
+}
+
+window.addEditTag = function(type) {
+  const input = document.getElementById(`editTagInput-${type}`);
+  const value = input.value.trim();
+
+  if (!value) return;
+
+  if (!editGangliaTags[type]) editGangliaTags[type] = [];
+
+  if (editGangliaTags[type].includes(value)) {
+    input.style.borderColor = '#ef4444';
+    setTimeout(() => input.style.borderColor = '', 1000);
+    return;
+  }
+
+  editGangliaTags[type].push(value);
+  input.value = '';
+  renderEditTags(type);
+};
+
+window.removeEditTag = function(type, value) {
+  if (!editGangliaTags[type]) return;
+  editGangliaTags[type] = editGangliaTags[type].filter(t => t !== value);
+  renderEditTags(type);
+};
+
+function renderEditTags(type) {
+  const container = document.getElementById(`edit-tags-${type}`);
+  if (!container) return;
+
+  const tags = editGangliaTags[type] || [];
+
+  if (tags.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = tags.map(tag => `
+    <span class="tag">
+      ${tag}
+      <button class="tag-remove" onclick="removeEditTag('${type}', '${tag.replace(/'/g, "\\'")}')">×</button>
+    </span>
+  `).join('');
+}
+
+async function saveGangliaEdits() {
+  if (!currentEditingGanglia) return;
+
+  const description = document.getElementById('editGangliaDescription').value.trim();
+  const weight = parseFloat(document.getElementById('editGangliaWeight').value);
+  const context = document.getElementById('editGangliaContext').value.trim();
+  const expertise = document.querySelector('input[name="editExpertise"]:checked').value;
+  const horizon = document.querySelector('input[name="editHorizon"]:checked').value;
+
+  const subtopics = (editGangliaTags.subtopics || []).join(', ');
+  const relations = (editGangliaTags.relations || []).join(', ');
+
+  const saveBtn = document.getElementById('saveEditGanglia');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+
+  try {
+    const response = await fetch(`/api/ganglia/${currentEditingGanglia.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description,
+        weight,
+        enrichmentAnswers: {
+          context,
+          expertise,
+          subtopics,
+          relations,
+          horizon
+        }
+      })
+    });
+
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error);
+
+    showNotification(`✅ Ganglia updated: ${data.ganglia.name}`, 'success');
+    document.getElementById('gangliaEditModal').classList.add('hidden');
+    await loadGangliaList();
+
+  } catch (error) {
+    console.error('Save ganglia error:', error);
+    document.getElementById('editGangliaError').textContent = `Failed: ${error.message}`;
+    document.getElementById('editGangliaError').classList.remove('hidden');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Changes';
+  }
+}
+
+function setupGangliaEditModal() {
+  const modal = document.getElementById('gangliaEditModal');
+  const closeBtn = document.getElementById('closeGangliaEditModal');
+  const cancelBtn = document.getElementById('cancelEditGanglia');
+  const saveBtn = document.getElementById('saveEditGanglia');
+
+  // Weight slider
+  const weightSlider = document.getElementById('editGangliaWeight');
+  const weightValue = document.getElementById('editWeightValue');
+  weightSlider.addEventListener('input', (e) => {
+    weightValue.textContent = parseFloat(e.target.value).toFixed(1);
+  });
+
+  // Enter key for tag inputs
+  ['subtopics', 'relations'].forEach(type => {
+    const input = document.getElementById(`editTagInput-${type}`);
+    if (input) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addEditTag(type);
+        }
+      });
+    }
+  });
+
+  closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  saveBtn.addEventListener('click', saveGangliaEdits);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.add('hidden');
+  });
 }
 
 function setupGangliaModal() {

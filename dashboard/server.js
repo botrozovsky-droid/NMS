@@ -789,6 +789,68 @@ app.post('/api/ganglia', async (req, res) => {
   }
 });
 
+// API: Update ganglia
+app.put('/api/ganglia/:id', async (req, res) => {
+  try {
+    const { description, weight, enrichmentAnswers } = req.body;
+    const { GangliaManager } = await import('../lib/ganglia-manager.js');
+    const { getDatabase } = await import('../lib/db-adapter.js');
+    const dbPath = join(memoryRoot, 'neocortex', 'nms.db');
+    const manager = new GangliaManager(dbPath);
+    const db = getDatabase(dbPath);
+    db.initialize();
+
+    // Get current ganglia
+    const current = manager.getGanglia(req.params.id);
+    if (!current) {
+      manager.close();
+      db.close();
+      return res.status(404).json({ success: false, error: 'Ganglia not found' });
+    }
+
+    // Parse updates
+    const updates = {};
+    if (description !== undefined) updates.description = description;
+    if (weight !== undefined) updates.weight = weight;
+
+    // Update enrichment in metadata
+    if (enrichmentAnswers) {
+      const metadata = typeof current.metadata === 'string'
+        ? JSON.parse(current.metadata)
+        : current.metadata;
+
+      if (enrichmentAnswers.context !== undefined) metadata.context = enrichmentAnswers.context;
+      if (enrichmentAnswers.expertise !== undefined) metadata.expertise_level = enrichmentAnswers.expertise;
+      if (enrichmentAnswers.subtopics !== undefined) {
+        metadata.subtopics = enrichmentAnswers.subtopics.split(',').map(s => s.trim()).filter(s => s);
+      }
+      if (enrichmentAnswers.relations !== undefined) {
+        metadata.related_projects = enrichmentAnswers.relations.split(',').map(s => s.trim()).filter(s => s);
+      }
+      if (enrichmentAnswers.horizon !== undefined) metadata.horizon = enrichmentAnswers.horizon;
+
+      // Update description in metadata too
+      if (description) metadata.description = description;
+
+      updates.metadata = JSON.stringify(metadata);
+    }
+
+    // Apply updates
+    manager.updateGanglia(req.params.id, updates);
+
+    // Get updated ganglia
+    const updated = manager.getGanglia(req.params.id);
+
+    manager.close();
+    db.close();
+
+    res.json({ success: true, ganglia: updated });
+  } catch (error) {
+    console.error('Update ganglia error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // API: Delete ganglia
 app.delete('/api/ganglia/:id', async (req, res) => {
   try {
