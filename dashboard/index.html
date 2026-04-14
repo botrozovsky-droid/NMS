@@ -384,6 +384,25 @@
           </div>
         </section>
 
+        <!-- Ganglia (Semantic Anchors) -->
+        <section class="bg-dark-panel border border-dark-border rounded-lg p-4">
+          <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+            <span>🧠</span>
+            <span>Ganglia</span>
+          </h3>
+
+          <!-- Create Button -->
+          <button id="createGangliaBtn" class="w-full px-3 py-2 mb-3 text-sm bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors flex items-center justify-center gap-2">
+            <span>+</span>
+            <span>Create Semantic Anchor</span>
+          </button>
+
+          <!-- Ganglia List -->
+          <div id="gangliaList" class="space-y-2 max-h-60 overflow-y-auto">
+            <div class="text-xs text-dark-muted text-center py-4">Loading...</div>
+          </div>
+        </section>
+
         <!-- Import Timeline (Collapsed by default) -->
         <section class="bg-dark-panel border border-dark-border rounded-lg p-4">
           <button id="toggleTimeline" class="w-full flex items-center justify-between text-sm font-semibold">
@@ -517,6 +536,84 @@
         </button>
         <button id="confirmHnsw" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
           Proceed
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ganglia Creation Modal -->
+  <div id="gangliaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-dark-panel border border-dark-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-dark-border sticky top-0 bg-dark-panel z-10">
+        <h2 class="text-lg font-semibold">Create Ganglia (Semantic Anchor)</h2>
+        <button id="closeGangliaModal" class="text-dark-muted hover:text-dark-text transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-4">
+        <!-- Step 1: Basic Info -->
+        <div id="gangliaStep1">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">Name *</label>
+              <input id="gangliaName" type="text" placeholder="e.g., Machine Learning" class="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg focus:outline-none focus:border-dark-accent">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Type *</label>
+              <select id="gangliaType" class="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg focus:outline-none focus:border-dark-accent">
+                <option value="concept">Concept</option>
+                <option value="project">Project</option>
+                <option value="person">Person</option>
+                <option value="skill">Skill</option>
+                <option value="domain">Domain</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Description (optional)</label>
+              <textarea id="gangliaDescription" rows="3" placeholder="Brief description..." class="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg focus:outline-none focus:border-dark-accent resize-none"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: AI Questions -->
+        <div id="gangliaStep2" class="hidden">
+          <div class="mb-4 text-sm text-dark-muted">
+            Answer these questions to help the system understand your intent:
+          </div>
+          <div id="gangliaQuestions" class="space-y-4">
+            <!-- Questions will be injected here -->
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="gangliaLoading" class="hidden text-center py-8">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-dark-accent mx-auto mb-3"></div>
+          <div class="text-sm text-dark-muted">Generating questions...</div>
+        </div>
+
+        <!-- Error -->
+        <div id="gangliaError" class="hidden bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3 text-sm text-red-400">
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-3 px-6 py-4 border-t border-dark-border sticky bottom-0 bg-dark-panel">
+        <button id="gangliaBack" class="hidden px-4 py-2 bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">
+          Back
+        </button>
+        <button id="cancelGanglia" class="flex-1 px-4 py-2 bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button id="gangliaNext" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
+          Next
+        </button>
+        <button id="confirmGanglia" class="hidden flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
+          Create
         </button>
       </div>
     </div>

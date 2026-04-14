@@ -39,12 +39,14 @@ async function init() {
   setupImport();
   setupModal();
   setupHnswToggle();
+  setupGangliaModal();
 
   // Render visualizations
   renderGraph();
   renderTopConcepts();
   renderHealthDashboard();
   updateStatistics();
+  loadGangliaList();
 
   console.log('✅ Dashboard initialized');
 }
@@ -1556,6 +1558,227 @@ async function toggleSearchMode() {
     confirmBtn.disabled = false;
     confirmBtn.textContent = 'Proceed';
   }
+}
+
+// ========================================
+// GANGLIA MANAGEMENT
+// ========================================
+
+let gangliaQuestions = [];
+let gangliaAnswers = {};
+
+async function loadGangliaList() {
+  try {
+    const response = await fetch('/api/ganglia');
+    const data = await response.json();
+
+    if (!data.success) throw new Error(data.error);
+
+    const container = document.getElementById('gangliaList');
+    const ganglia = data.ganglia || [];
+
+    if (ganglia.length === 0) {
+      container.innerHTML = '<div class="text-xs text-dark-muted text-center py-4">No ganglia yet. Create one to get started.</div>';
+      return;
+    }
+
+    container.innerHTML = ganglia.map(g => `
+      <div class="p-3 bg-dark-bg border border-dark-border rounded-lg hover:border-dark-accent transition-colors cursor-pointer ganglia-item" data-id="${g.id}">
+        <div class="flex items-start justify-between mb-1">
+          <div class="font-medium text-sm">${g.name}</div>
+          <div class="text-xs text-dark-muted">${g.type}</div>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-dark-muted">
+          <span>Weight: ${g.weight.toFixed(1)}</span>
+          <span>•</span>
+          <span>${g.connections} connections</span>
+        </div>
+      </div>
+    `).join('');
+
+    // Add click handlers
+    document.querySelectorAll('.ganglia-item').forEach(item => {
+      item.addEventListener('click', () => {
+        showGangliaDetails(item.dataset.id);
+      });
+    });
+
+  } catch (error) {
+    console.error('Load ganglia error:', error);
+    document.getElementById('gangliaList').innerHTML = '<div class="text-xs text-red-400 text-center py-4">Failed to load</div>';
+  }
+}
+
+async function showGangliaDetails(gangliaId) {
+  try {
+    const response = await fetch(`/api/ganglia/${gangliaId}`);
+    const data = await response.json();
+
+    if (!data.success) throw new Error(data.error);
+
+    const g = data.ganglia;
+    showNotification(`
+      <strong>${g.name}</strong> (${g.type})<br>
+      Weight: ${g.weight.toFixed(2)} | Connections: ${g.edges.length}<br>
+      Context: ${g.metadata.context} | Horizon: ${g.metadata.horizon}<br>
+      Health: ${g.health.status.toUpperCase()}
+    `, 'info');
+
+  } catch (error) {
+    console.error('Show ganglia error:', error);
+    showNotification(`Failed to load details: ${error.message}`, 'error');
+  }
+}
+
+function setupGangliaModal() {
+  const modal = document.getElementById('gangliaModal');
+  const createBtn = document.getElementById('createGangliaBtn');
+  const closeBtn = document.getElementById('closeGangliaModal');
+  const cancelBtn = document.getElementById('cancelGanglia');
+  const backBtn = document.getElementById('gangliaBack');
+  const nextBtn = document.getElementById('gangliaNext');
+  const confirmBtn = document.getElementById('confirmGanglia');
+
+  const step1 = document.getElementById('gangliaStep1');
+  const step2 = document.getElementById('gangliaStep2');
+  const loading = document.getElementById('gangliaLoading');
+  const errorDiv = document.getElementById('gangliaError');
+
+  // Open modal
+  createBtn.addEventListener('click', () => {
+    resetGangliaModal();
+    modal.classList.remove('hidden');
+  });
+
+  // Close modal
+  closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+  // Next button (Step 1 → Step 2)
+  nextBtn.addEventListener('click', async () => {
+    const name = document.getElementById('gangliaName').value.trim();
+    const type = document.getElementById('gangliaType').value;
+    const description = document.getElementById('gangliaDescription').value.trim();
+
+    if (!name) {
+      errorDiv.textContent = 'Name is required';
+      errorDiv.classList.remove('hidden');
+      return;
+    }
+
+    errorDiv.classList.add('hidden');
+
+    // Generate questions
+    step1.classList.add('hidden');
+    loading.classList.remove('hidden');
+
+    try {
+      const response = await fetch('/api/ganglia/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+      });
+
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error);
+
+      gangliaQuestions = data.questions;
+      renderQuestions();
+
+      loading.classList.add('hidden');
+      step2.classList.remove('hidden');
+      nextBtn.classList.add('hidden');
+      backBtn.classList.remove('hidden');
+      confirmBtn.classList.remove('hidden');
+
+    } catch (error) {
+      console.error('Generate questions error:', error);
+      loading.classList.add('hidden');
+      step1.classList.remove('hidden');
+      errorDiv.textContent = `Failed: ${error.message}`;
+      errorDiv.classList.remove('hidden');
+    }
+  });
+
+  // Back button (Step 2 → Step 1)
+  backBtn.addEventListener('click', () => {
+    step2.classList.add('hidden');
+    step1.classList.remove('hidden');
+    nextBtn.classList.remove('hidden');
+    backBtn.classList.add('hidden');
+    confirmBtn.classList.add('hidden');
+  });
+
+  // Confirm button (Create ganglia)
+  confirmBtn.addEventListener('click', async () => {
+    const name = document.getElementById('gangliaName').value.trim();
+    const type = document.getElementById('gangliaType').value;
+    const description = document.getElementById('gangliaDescription').value.trim();
+
+    // Collect answers
+    gangliaAnswers = {};
+    gangliaQuestions.forEach((q, i) => {
+      const input = document.getElementById(`gangliaQ${i}`);
+      gangliaAnswers[q.type] = input.value.trim();
+    });
+
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Creating...';
+
+    try {
+      const response = await fetch('/api/ganglia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, type, description, answers: gangliaAnswers })
+      });
+
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error);
+
+      showNotification(`✅ Ganglia created: ${data.ganglia.name}`, 'success');
+      modal.classList.add('hidden');
+      await loadGangliaList();
+      await loadGraph(); // Refresh graph
+
+    } catch (error) {
+      console.error('Create ganglia error:', error);
+      errorDiv.textContent = `Failed: ${error.message}`;
+      errorDiv.classList.remove('hidden');
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Create';
+    }
+  });
+
+  // Close on backdrop
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.add('hidden');
+  });
+}
+
+function renderQuestions() {
+  const container = document.getElementById('gangliaQuestions');
+  container.innerHTML = gangliaQuestions.map((q, i) => `
+    <div>
+      <label class="block text-sm font-medium mb-2">${q.q}</label>
+      <input id="gangliaQ${i}" type="text" class="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg focus:outline-none focus:border-dark-accent">
+    </div>
+  `).join('');
+}
+
+function resetGangliaModal() {
+  document.getElementById('gangliaName').value = '';
+  document.getElementById('gangliaType').value = 'concept';
+  document.getElementById('gangliaDescription').value = '';
+  document.getElementById('gangliaStep1').classList.remove('hidden');
+  document.getElementById('gangliaStep2').classList.add('hidden');
+  document.getElementById('gangliaLoading').classList.add('hidden');
+  document.getElementById('gangliaError').classList.add('hidden');
+  document.getElementById('gangliaNext').classList.remove('hidden');
+  document.getElementById('gangliaBack').classList.add('hidden');
+  document.getElementById('confirmGanglia').classList.add('hidden');
+  gangliaQuestions = [];
+  gangliaAnswers = {};
 }
 
 // ========================================

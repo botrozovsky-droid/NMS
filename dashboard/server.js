@@ -711,6 +711,105 @@ app.post('/api/search/toggle', async (req, res) => {
   }
 });
 
+// ============================================
+// GANGLIA API
+// ============================================
+
+// API: List ganglia
+app.get('/api/ganglia', async (req, res) => {
+  try {
+    const { GangliaManager } = await import('../lib/ganglia-manager.js');
+    const dbPath = join(memoryRoot, 'neocortex', 'nms.db');
+    const manager = new GangliaManager(dbPath);
+
+    const ganglia = manager.listGanglia();
+    manager.close();
+
+    res.json({ success: true, ganglia });
+  } catch (error) {
+    console.error('List ganglia error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// API: Get ganglia details
+app.get('/api/ganglia/:id', async (req, res) => {
+  try {
+    const { GangliaManager } = await import('../lib/ganglia-manager.js');
+    const dbPath = join(memoryRoot, 'neocortex', 'nms.db');
+    const manager = new GangliaManager(dbPath);
+
+    const ganglia = manager.getGanglia(req.params.id);
+    manager.close();
+
+    if (!ganglia) {
+      return res.status(404).json({ success: false, error: 'Ganglia not found' });
+    }
+
+    res.json({ success: true, ganglia });
+  } catch (error) {
+    console.error('Get ganglia error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// API: Generate enrichment questions
+app.post('/api/ganglia/questions', async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const { GangliaManager } = await import('../lib/ganglia-manager.js');
+    const dbPath = join(memoryRoot, 'neocortex', 'nms.db');
+    const manager = new GangliaManager(dbPath);
+
+    const questions = await manager.generateEnrichmentQuestions(name, description || '');
+    manager.close();
+
+    res.json({ success: true, questions });
+  } catch (error) {
+    console.error('Generate questions error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// API: Create ganglia
+app.post('/api/ganglia', async (req, res) => {
+  try {
+    const { name, type, description, answers } = req.body;
+    const { GangliaManager } = await import('../lib/ganglia-manager.js');
+    const dbPath = join(memoryRoot, 'neocortex', 'nms.db');
+    const manager = new GangliaManager(dbPath);
+
+    const ganglia = await manager.createGanglia(name, type, description, answers);
+    manager.close();
+
+    res.json({ success: true, ganglia });
+  } catch (error) {
+    console.error('Create ganglia error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// API: Delete ganglia
+app.delete('/api/ganglia/:id', async (req, res) => {
+  try {
+    const { GangliaManager } = await import('../lib/ganglia-manager.js');
+    const dbPath = join(memoryRoot, 'neocortex', 'nms.db');
+    const manager = new GangliaManager(dbPath);
+
+    const deleted = manager.deleteGanglia(req.params.id);
+    manager.close();
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Ganglia not found' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete ganglia error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`\n🚀 OpenClaw Memory Dashboard`);
