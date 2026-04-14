@@ -3,7 +3,7 @@
  * Create test events for consolidation testing
  */
 
-import memoryIntegration from './integration.js';
+import memoryIntegration from '../integration.js';
 
 const TEST_SESSION_ID = 'gemini-test-' + Date.now();
 

@@ -8,9 +8,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { exportToObsidian } from './export-obsidian.js';
-import { extractFacts } from './contradiction-detector.js';
-import { loadJSON } from './lib/json-store.js';
+import { exportToObsidian } from '../export-obsidian.js';
+import { extractFacts } from '../contradiction-detector.js';
+import { loadJSON } from '../lib/json-store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,7 +33,7 @@ function assert(condition, message) {
 async function testObsidianExport() {
   console.log('\n📓 Testing Obsidian Export...\n');
 
-  const testVaultDir = path.join(__dirname, 'test-exports', 'test-vault');
+  const testVaultDir = path.join(__dirname, '..', 'test-exports', 'test-vault');
 
   try {
     // Export to test directory
@@ -86,7 +86,7 @@ async function testContradictionDetection() {
 
   try {
     // Load graph
-    const graph = await loadJSON(path.join(__dirname, 'neocortex', 'knowledge-graph.json'));
+    const graph = await loadJSON(path.join(__dirname, '..', 'neocortex', 'knowledge-graph.json'));
     assert(graph !== null, 'Knowledge graph loaded');
 
     // Extract facts
@@ -127,7 +127,7 @@ async function testContradictionDetection() {
 async function testExportQuality() {
   console.log('\n📋 Testing Export Quality...\n');
 
-  const testVaultDir = path.join(__dirname, 'test-exports', 'test-vault');
+  const testVaultDir = path.join(__dirname, '..', 'test-exports', 'test-vault');
 
   try {
     // Read INDEX.md

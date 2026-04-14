@@ -7,8 +7,8 @@
 import assert from 'assert';
 import fs from 'fs/promises';
 import path from 'path';
-import { TransactionManager, withTransaction } from './transaction-manager.js';
-import memoryManager from './memory-manager.js';
+import { TransactionManager, withTransaction } from '../transaction-manager.js';
+import memoryManager from '../memory-manager.js';
 
 let testsPassed = 0;
 let testsFailed = 0;

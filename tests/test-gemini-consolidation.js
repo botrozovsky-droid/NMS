@@ -6,7 +6,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { analyzeWithGemini } from './lib/consolidation-core.js';
+import { analyzeWithGemini } from '../lib/consolidation-core.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -14,7 +14,7 @@ async function testGemini() {
   console.log('🧪 Testing Gemini API with NMS architecture episodes...\n');
 
   // Load the NMS architecture import session
-  const sessionPath = path.join(__dirname, 'hippocampus', 'sessions', 'import-1776074252853.json');
+  const sessionPath = path.join(__dirname, '..', 'hippocampus', 'sessions', 'import-1776074252853.json');
   const sessionData = JSON.parse(await fs.readFile(sessionPath, 'utf-8'));
 
   // Take only first 3 episodes (small test)

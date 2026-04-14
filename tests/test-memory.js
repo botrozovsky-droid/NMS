@@ -4,7 +4,7 @@
  * Validates all components of the neurobiological memory system
  */
 
-import memoryIntegration from './integration.js';
+import memoryIntegration from '../integration.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -96,13 +96,13 @@ async function runTests() {
 
   // Test 9: Session file created
   if (await test('Verify session file created', async () => {
-    const sessionFile = path.join(__dirname, 'hippocampus', 'sessions', `${TEST_SESSION_ID}.json`);
+    const sessionFile = path.join(__dirname, '..', 'hippocampus', 'sessions', `${TEST_SESSION_ID}.json`);
     await fs.access(sessionFile);
   })) passed++; else failed++;
 
   // Test 10: Consolidation candidates added
   if (await test('Verify consolidation candidates', async () => {
-    const candidatesFile = path.join(__dirname, 'hippocampus', 'synaptic-candidates.json');
+    const candidatesFile = path.join(__dirname, '..', 'hippocampus', 'synaptic-candidates.json');
     const data = JSON.parse(await fs.readFile(candidatesFile, 'utf-8'));
     if (data.candidates.length === 0) {
       throw new Error('No consolidation candidates added (error event should be high importance)');

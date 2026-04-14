@@ -7,11 +7,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { canonicalize, findDuplicates, mergeDuplicates } from './canonical-forms.js';
-import { detectAllHallucinations } from './hallucination-detector.js';
+import { canonicalize, findDuplicates, mergeDuplicates } from '../canonical-forms.js';
+import { detectAllHallucinations } from '../hallucination-detector.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const KNOWLEDGE_GRAPH = path.join(__dirname, 'neocortex', 'knowledge-graph.json');
+const KNOWLEDGE_GRAPH = path.join(__dirname, '..', 'neocortex', 'knowledge-graph.json');
 
 let testsPassed = 0;
 let testsFailed = 0;

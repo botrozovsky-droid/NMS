@@ -14,7 +14,7 @@ import {
   semanticSearch,
   hybridSearch,
   getCacheStats
-} from './semantic-search.js';
+} from '../semantic-search.js';
 
 let testsPassed = 0;
 let testsFailed = 0;

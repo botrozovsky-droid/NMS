@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import { SessionManager, getSessionManager } from './session-manager.js';
+import { SessionManager, getSessionManager } from '../session-manager.js';
 
 let testsPassed = 0;
 let testsFailed = 0;
