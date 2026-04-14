@@ -81,7 +81,15 @@ yarn-debug.log*
 yarn-error.log*
 # Version development docs (internal)
 CHANGELOG-v*.md
+v0.*.md
 v0.*-*.md
+TEST-REPORT-*.md
+*-COMPLETE.md
+*-SUMMARY.md
+*-PROGRESS.md
+*-PLAN.md
+*-ARCHIVE-CONTENTS.md
+*-FINAL-REPORT.md
 ГОТОВО.md
 UPDATE-SUMMARY.md
 DASHBOARD-COMPLETE.md

@@ -2,7 +2,7 @@
 /**
  * Sync OpenClaw Sessions to NMS
  *
- * Копирует сессии из OpenClaw в NMS hippocampus для консолидации
+ * Copies sessions from OpenClaw to NMS hippocampus for consolidation
  */
 
 import fs from 'fs/promises';
@@ -13,14 +13,14 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Пути
+// Paths
 const OPENCLAW_SESSIONS = path.join(dirname(__dirname), 'agents', 'main', 'sessions');
 const NMS_SESSIONS = path.join(__dirname, 'hippocampus', 'sessions');
 const NMS_CANDIDATES = path.join(__dirname, 'hippocampus', 'synaptic-candidates.json');
 const SYNC_STATE_FILE = path.join(__dirname, 'meta', 'openclaw-sync-state.json');
 
 /**
- * Загрузить состояние синхронизации
+ * Load synchronization state
  */
 async function loadSyncState() {
   try {
@@ -32,7 +32,7 @@ async function loadSyncState() {
 }
 
 /**
- * Сохранить состояние синхронизации
+ * Save synchronization state
  */
 async function saveSyncState(state) {
   await fs.mkdir(path.dirname(SYNC_STATE_FILE), { recursive: true });
@@ -40,7 +40,7 @@ async function saveSyncState(state) {
 }
 
 /**
- * Конвертировать OpenClaw JSONL в NMS формат
+ * Convert OpenClaw JSONL to NMS format
  */
 async function convertOpenClawSession(sessionFile, sessionKey) {
   const lines = (await fs.readFile(sessionFile, 'utf-8')).trim().split('\n');
@@ -52,7 +52,7 @@ async function convertOpenClawSession(sessionFile, sessionKey) {
     try {
       const entry = JSON.parse(line);
 
-      // Обработать сообщения
+      // Process messages
       if (entry.type === 'message' && entry.message) {
         const msg = entry.message;
         const role = msg.role;
@@ -79,7 +79,7 @@ async function convertOpenClawSession(sessionFile, sessionKey) {
         }
       }
 
-      // Обработать tool calls
+      // Process tool calls
       if (entry.type === 'tool_call' && entry.tool_call) {
         episodes.push({
           episodeId: `openclaw-tool-${entry.id || Date.now()}`,
@@ -98,7 +98,7 @@ async function convertOpenClawSession(sessionFile, sessionKey) {
       }
 
     } catch (error) {
-      console.warn(`⚠️  Пропущена строка из-за ошибки: ${error.message}`);
+      console.warn(`⚠️  Skipped line due to error: ${error.message}`);
     }
   }
 
@@ -106,7 +106,7 @@ async function convertOpenClawSession(sessionFile, sessionKey) {
 }
 
 /**
- * Добавить в очередь консолидации
+ * Add to consolidation queue
  */
 async function queueForConsolidation(episodes, sessionId) {
   let candidates = {
@@ -124,7 +124,7 @@ async function queueForConsolidation(episodes, sessionId) {
     const data = await fs.readFile(NMS_CANDIDATES, 'utf-8');
     candidates = JSON.parse(data);
   } catch {
-    // Файл не существует
+    // File doesn't exist
   }
 
   for (const episode of episodes) {
@@ -132,7 +132,7 @@ async function queueForConsolidation(episodes, sessionId) {
       episodeId: episode.episodeId,
       sessionId,
       timestamp: new Date(episode.timestamp).getTime(),
-      importance: 6, // Средняя важность для OpenClaw сессий
+      importance: 6, // Average importance for OpenClaw sessions
       addedToQueue: Date.now()
     });
   }
@@ -144,26 +144,26 @@ async function queueForConsolidation(episodes, sessionId) {
 }
 
 /**
- * Главная функция синхронизации
+ * Main synchronization function
  */
 async function sync() {
-  console.log('🔄 Синхронизация OpenClaw → NMS\n');
+  console.log('🔄 Synchronizing OpenClaw → NMS\n');
 
   const state = await loadSyncState();
   const now = Date.now();
 
-  // Найти все JSONL файлы в OpenClaw sessions
+  // Find all JSONL files in OpenClaw sessions
   let files;
   try {
     files = await fs.readdir(OPENCLAW_SESSIONS);
   } catch (error) {
-    console.error(`❌ Не найдена директория OpenClaw sessions: ${OPENCLAW_SESSIONS}`);
-    console.log('   Убедитесь что OpenClaw установлен и работал');
+    console.error(`❌ OpenClaw sessions directory not found: ${OPENCLAW_SESSIONS}`);
+    console.log('   Make sure OpenClaw is installed and was running');
     process.exit(1);
   }
 
   const jsonlFiles = files.filter(f => f.endsWith('.jsonl') && !f.includes('.reset.'));
-  console.log(`📁 Найдено ${jsonlFiles.length} сессий в OpenClaw`);
+  console.log(`📁 Found ${jsonlFiles.length} sessions in OpenClaw`);
 
   let syncedCount = 0;
   let skippedCount = 0;
@@ -172,7 +172,7 @@ async function sync() {
   for (const file of jsonlFiles) {
     const sessionKey = file.replace('.jsonl', '');
 
-    // Пропустить уже синхронизированные
+    // Skip already synchronized
     if (state.syncedSessions.includes(sessionKey)) {
       skippedCount++;
       continue;
@@ -181,23 +181,23 @@ async function sync() {
     const sessionPath = path.join(OPENCLAW_SESSIONS, file);
     const stats = await fs.stat(sessionPath);
 
-    // Пропустить пустые файлы
+    // Skip empty files
     if (stats.size === 0) {
-      console.log(`   ⏭️  ${file}: пустой файл`);
+      console.log(`   ⏭️  ${file}: empty file`);
       continue;
     }
 
     console.log(`   📥 ${file} (${(stats.size / 1024).toFixed(1)} KB)`);
 
-    // Конвертировать сессию
+    // Convert session
     const episodes = await convertOpenClawSession(sessionPath, sessionKey);
 
     if (episodes.length === 0) {
-      console.log(`      ⚠️  Нет эпизодов для импорта`);
+      console.log(`      ⚠️  No episodes to import`);
       continue;
     }
 
-    // Создать NMS сессию
+    // Create NMS session
     const nmsSessionId = `openclaw-${sessionKey}-${now}`;
     const nmsSession = {
       sessionId: nmsSessionId,
@@ -209,17 +209,17 @@ async function sync() {
       episodes
     };
 
-    // Сохранить в NMS hippocampus
+    // Save to NMS hippocampus
     await fs.mkdir(NMS_SESSIONS, { recursive: true });
     const nmsPath = path.join(NMS_SESSIONS, `${nmsSessionId}.json`);
     await fs.writeFile(nmsPath, JSON.stringify(nmsSession, null, 2));
 
-    // Добавить в очередь консолидации
+    // Add to consolidation queue
     await queueForConsolidation(episodes, nmsSessionId);
 
-    console.log(`      ✅ ${episodes.length} эпизодов → NMS`);
+    console.log(`      ✅ ${episodes.length} episodes → NMS`);
 
-    // Обновить состояние
+    // Update state
     state.syncedSessions.push(sessionKey);
     totalEpisodes += episodes.length;
     syncedCount++;
@@ -228,19 +228,19 @@ async function sync() {
   state.lastSync = now;
   await saveSyncState(state);
 
-  console.log(`\n✅ Синхронизация завершена:`);
-  console.log(`   📊 Синхронизировано: ${syncedCount} сессий`);
-  console.log(`   📝 Всего эпизодов: ${totalEpisodes}`);
-  console.log(`   ⏭️  Пропущено: ${skippedCount} (уже были)`);
+  console.log(`\n✅ Synchronization complete:`);
+  console.log(`   📊 Synchronized: ${syncedCount} sessions`);
+  console.log(`   📝 Total episodes: ${totalEpisodes}`);
+  console.log(`   ⏭️  Skipped: ${skippedCount} (already synced)`);
 
   if (totalEpisodes > 0) {
-    console.log(`\n💡 Запустите консолидацию:`);
-    console.log(`   cd C:\\Users\\Vlad\\.openclaw\\memory`);
+    console.log(`\n💡 Run consolidation:`);
+    console.log(`   cd ~/.nms/`);
     console.log(`   npm run consolidate`);
   }
 }
 
 sync().catch(error => {
-  console.error('❌ Ошибка:', error);
+  console.error('❌ Error:', error);
   process.exit(1);
 });
