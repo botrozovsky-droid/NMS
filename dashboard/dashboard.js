@@ -38,6 +38,7 @@ async function init() {
   setupTimeline();
   setupImport();
   setupModal();
+  setupHnswToggle();
 
   // Render visualizations
   renderGraph();
@@ -455,6 +456,9 @@ async function renderHealthDashboard() {
     `;
 
     console.log('✅ Health dashboard updated');
+
+    // Update search mode
+    await updateSearchMode();
   } catch (error) {
     console.error('Health dashboard error:', error);
   }
@@ -1360,6 +1364,198 @@ window.viewEpisode = function(episodeId) {
 function showNotification(message, type = 'info') {
   // TODO: Implement toast notifications
   console.log(`[${type.toUpperCase()}] ${message}`);
+}
+
+// ========================================
+// HNSW TOGGLE
+// ========================================
+let currentSearchMode = 'linear';
+
+async function updateSearchMode() {
+  try {
+    const response = await fetch('/api/search/mode');
+    const data = await response.json();
+
+    currentSearchMode = data.mode;
+    const modeText = currentSearchMode === 'hnsw' ? 'HNSW' : 'Linear';
+    const modeColor = currentSearchMode === 'hnsw' ? 'text-green-400' : 'text-blue-400';
+
+    document.getElementById('searchMode').textContent = modeText;
+    document.getElementById('searchMode').className = `font-semibold ${modeColor}`;
+
+    const toggleBtn = document.getElementById('toggleSearchMode');
+    const newMode = currentSearchMode === 'hnsw' ? 'Linear' : 'HNSW';
+    toggleBtn.textContent = `Switch to ${newMode}`;
+
+  } catch (error) {
+    console.error('Failed to get search mode:', error);
+    document.getElementById('searchMode').textContent = 'Unknown';
+  }
+}
+
+function setupHnswToggle() {
+  const toggleBtn = document.getElementById('toggleSearchMode');
+  const modal = document.getElementById('hnswModal');
+  const closeBtn = document.getElementById('closeHnswModal');
+  const cancelBtn = document.getElementById('cancelHnsw');
+  const confirmBtn = document.getElementById('confirmHnsw');
+
+  // Open modal
+  toggleBtn.addEventListener('click', () => {
+    showHnswModal();
+  });
+
+  // Close modal
+  closeBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  // Confirm toggle
+  confirmBtn.addEventListener('click', async () => {
+    await toggleSearchMode();
+    modal.classList.add('hidden');
+  });
+
+  // Close on backdrop
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+    }
+  });
+}
+
+async function showHnswModal() {
+  const modal = document.getElementById('hnswModal');
+  const title = document.getElementById('hnswModalTitle');
+  const body = document.getElementById('hnswModalBody');
+
+  const targetMode = currentSearchMode === 'hnsw' ? 'linear' : 'hnsw';
+
+  try {
+    // Get graph stats for estimation
+    const statsResponse = await fetch('/api/stats');
+    const stats = await statsResponse.json();
+    const nodeCount = stats.nodes || 0;
+
+    // Calculate estimates
+    const estimatedTime = Math.ceil(nodeCount / 30); // ~30 nodes per second
+    const estimatedTokens = Math.ceil(nodeCount * 2); // ~2 tokens per node
+
+    if (targetMode === 'hnsw') {
+      title.textContent = '⚡ Switch to HNSW Search?';
+      body.innerHTML = `
+        <div class="space-y-3">
+          <div class="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <div class="font-semibold text-green-400 mb-1">✅ Benefits</div>
+            <ul class="text-xs space-y-1 text-dark-muted">
+              <li>• 100-1000x faster search</li>
+              <li>• Better for large graphs (>1000 nodes)</li>
+              <li>• Scales to millions of nodes</li>
+            </ul>
+          </div>
+
+          <div class="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+            <div class="font-semibold text-yellow-400 mb-1">⚠️ Trade-offs</div>
+            <ul class="text-xs space-y-1 text-dark-muted">
+              <li>• ~5% accuracy loss (approximate search)</li>
+              <li>• Index build time: ~${estimatedTime} seconds</li>
+              <li>• Token cost: ~${estimatedTokens} tokens</li>
+              <li>• +20% memory for index</li>
+            </ul>
+          </div>
+
+          <div class="p-3 bg-dark-bg border border-dark-border rounded-lg">
+            <div class="font-semibold text-dark-text mb-2">📊 Current Graph</div>
+            <div class="text-xs space-y-1 text-dark-muted">
+              <div class="flex justify-between">
+                <span>Nodes:</span>
+                <span class="font-semibold text-dark-text">${nodeCount}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Estimated time:</span>
+                <span class="font-semibold text-dark-text">~${estimatedTime}s</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Estimated cost:</span>
+                <span class="font-semibold text-dark-text">~${estimatedTokens} tokens</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      title.textContent = '🔄 Switch to Linear Search?';
+      body.innerHTML = `
+        <div class="space-y-3">
+          <div class="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <div class="font-semibold text-green-400 mb-1">✅ Benefits</div>
+            <ul class="text-xs space-y-1 text-dark-muted">
+              <li>• 100% accuracy (exact search)</li>
+              <li>• No index maintenance</li>
+              <li>• Lower memory usage</li>
+            </ul>
+          </div>
+
+          <div class="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+            <div class="font-semibold text-yellow-400 mb-1">⚠️ Trade-offs</div>
+            <ul class="text-xs space-y-1 text-dark-muted">
+              <li>• Slower for large graphs</li>
+              <li>• Not recommended for >1000 nodes</li>
+            </ul>
+          </div>
+
+          <div class="p-3 bg-dark-bg border border-dark-border rounded-lg">
+            <div class="font-semibold text-dark-text mb-2">📊 Current Graph</div>
+            <div class="text-xs space-y-1 text-dark-muted">
+              <div class="flex justify-between">
+                <span>Nodes:</span>
+                <span class="font-semibold text-dark-text">${nodeCount}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Impact:</span>
+                <span class="font-semibold text-dark-text">${nodeCount > 1000 ? '⚠️ Slow' : 'Minimal'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    modal.classList.remove('hidden');
+  } catch (error) {
+    console.error('Failed to show modal:', error);
+  }
+}
+
+async function toggleSearchMode() {
+  const confirmBtn = document.getElementById('confirmHnsw');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Switching...';
+
+  try {
+    const response = await fetch('/api/search/toggle', {
+      method: 'POST'
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showNotification(`✅ Switched to ${result.mode.toUpperCase()} mode`, 'success');
+      await updateSearchMode();
+    } else {
+      throw new Error(result.error || 'Failed to toggle mode');
+    }
+  } catch (error) {
+    console.error('Toggle error:', error);
+    showNotification(`❌ Failed: ${error.message}`, 'error');
+  } finally {
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Proceed';
+  }
 }
 
 // ========================================

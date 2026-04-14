@@ -279,6 +279,17 @@
               <!-- Populated by JS -->
             </div>
 
+            <!-- Search Mode -->
+            <div class="pt-2 border-t border-dark-border">
+              <div class="flex justify-between items-center text-sm mb-2">
+                <span class="text-dark-muted">⚙️ Search Mode</span>
+                <span id="searchMode" class="font-semibold text-blue-400">Loading...</span>
+              </div>
+              <button id="toggleSearchMode" class="w-full px-3 py-2 text-sm bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">
+                Switch to HNSW
+              </button>
+            </div>
+
             <!-- Actions -->
             <button id="runHealthCheck" class="w-full px-3 py-2 text-sm bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">
               Run Health Check
@@ -475,6 +486,37 @@
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
           Forget
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HNSW Toggle Modal -->
+  <div id="hnswModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-dark-panel border border-dark-border rounded-lg max-w-md w-full p-6">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold" id="hnswModalTitle">Switch to HNSW?</h3>
+        <button id="closeHnswModal" class="text-dark-muted hover:text-dark-text transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div id="hnswModalBody" class="space-y-4 text-sm">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-3 mt-6">
+        <button id="cancelHnsw" class="flex-1 px-4 py-2 bg-dark-bg hover:bg-dark-border border border-dark-border rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button id="confirmHnsw" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
+          Proceed
         </button>
       </div>
     </div>

@@ -622,6 +622,95 @@ app.delete('/api/nodes/:nodeId', async (req, res) => {
   }
 });
 
+// API: Get search mode
+app.get('/api/search/mode', async (req, res) => {
+  try {
+    const configPath = join(memoryRoot, 'neocortex', 'search-config.json');
+    const config = await loadJSON(configPath);
+
+    if (!config) {
+      return res.json({
+        mode: 'linear',
+        hnswEnabled: false
+      });
+    }
+
+    res.json({
+      mode: config.mode || 'linear',
+      hnswEnabled: config.hnswEnabled || false,
+      autoActivate: config.autoActivate || {}
+    });
+
+  } catch (error) {
+    console.error('Get search mode error:', error);
+    res.json({
+      mode: 'linear',
+      hnswEnabled: false
+    });
+  }
+});
+
+// API: Toggle search mode
+app.post('/api/search/toggle', async (req, res) => {
+  try {
+    const configPath = join(memoryRoot, 'neocortex', 'search-config.json');
+    const graphPath = join(memoryRoot, 'neocortex', 'knowledge-graph.json');
+
+    // Load current config
+    const config = await loadJSON(configPath);
+    if (!config) {
+      return res.status(500).json({
+        success: false,
+        error: 'Search config not found'
+      });
+    }
+
+    const currentMode = config.mode || 'linear';
+    const newMode = currentMode === 'hnsw' ? 'linear' : 'hnsw';
+
+    if (newMode === 'hnsw') {
+      // Enable HNSW
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+
+      // Run enable command in background
+      execAsync(`cd "${memoryRoot}" && node semantic-search.js enable-hnsw`)
+        .catch(err => console.error('HNSW enable background error:', err));
+
+      // Immediately update config to show HNSW (actual build happens in background)
+      config.mode = 'hnsw';
+      config.hnswEnabled = true;
+      await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+
+      res.json({
+        success: true,
+        mode: 'hnsw',
+        message: 'HNSW enabled (building index in background)'
+      });
+
+    } else {
+      // Disable HNSW
+      config.mode = 'linear';
+      config.hnswEnabled = false;
+      await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+
+      res.json({
+        success: true,
+        mode: 'linear',
+        message: 'Switched to linear search'
+      });
+    }
+
+  } catch (error) {
+    console.error('Toggle search mode error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`\n🚀 OpenClaw Memory Dashboard`);
