@@ -1566,6 +1566,7 @@ async function toggleSearchMode() {
 
 let gangliaQuestions = [];
 let gangliaAnswers = {};
+let gangliaTags = {}; // Store tags for subtopics and relations
 
 async function loadGangliaList() {
   try {
@@ -1718,8 +1719,17 @@ function setupGangliaModal() {
     // Collect answers
     gangliaAnswers = {};
     gangliaQuestions.forEach((q, i) => {
-      const input = document.getElementById(`gangliaQ${i}`);
-      gangliaAnswers[q.type] = input.value.trim();
+      if (q.type === 'subtopics' || q.type === 'relations') {
+        // Get tags
+        const tags = gangliaTags[q.type] || [];
+        gangliaAnswers[q.type] = tags.join(', ');
+      } else {
+        // Get text input
+        const input = document.getElementById(`gangliaQ${i}`);
+        if (input) {
+          gangliaAnswers[q.type] = input.value.trim();
+        }
+      }
     });
 
     confirmBtn.disabled = true;
@@ -1758,11 +1768,98 @@ function setupGangliaModal() {
 
 function renderQuestions() {
   const container = document.getElementById('gangliaQuestions');
-  container.innerHTML = gangliaQuestions.map((q, i) => `
-    <div>
-      <label class="block text-sm font-medium mb-2">${q.q}</label>
-      <input id="gangliaQ${i}" type="text" class="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg focus:outline-none focus:border-dark-accent">
-    </div>
+
+  container.innerHTML = gangliaQuestions.map((q, i) => {
+    const isTagInput = q.type === 'subtopics' || q.type === 'relations';
+
+    if (isTagInput) {
+      gangliaTags[q.type] = gangliaTags[q.type] || [];
+
+      return `
+        <div>
+          <label class="block text-sm font-medium mb-2">${q.q}</label>
+          <div class="tag-container">
+            <div id="tags-${q.type}" class="tags-list"></div>
+            <div class="tag-input-row">
+              <input
+                id="tagInput-${q.type}"
+                type="text"
+                class="tag-input"
+                placeholder="Type and press Enter or click Add..."
+                data-type="${q.type}"
+              >
+              <button class="tag-btn" data-type="${q.type}" onclick="addGangliaTag('${q.type}')">+ Add</button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      return `
+        <div>
+          <label class="block text-sm font-medium mb-2">${q.q}</label>
+          <input id="gangliaQ${i}" type="text" class="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-lg focus:outline-none focus:border-dark-accent">
+        </div>
+      `;
+    }
+  }).join('');
+
+  // Add Enter key handler for tag inputs
+  setTimeout(() => {
+    document.querySelectorAll('.tag-input').forEach(input => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addGangliaTag(e.target.dataset.type);
+        }
+      });
+    });
+  }, 0);
+}
+
+window.addGangliaTag = function(type) {
+  const input = document.getElementById(`tagInput-${type}`);
+  const value = input.value.trim();
+
+  if (!value) return;
+
+  // Initialize array if needed
+  if (!gangliaTags[type]) gangliaTags[type] = [];
+
+  // Check for duplicates
+  if (gangliaTags[type].includes(value)) {
+    input.style.borderColor = '#ef4444';
+    setTimeout(() => input.style.borderColor = '', 1000);
+    return;
+  }
+
+  // Add tag
+  gangliaTags[type].push(value);
+  input.value = '';
+  renderGangliaTags(type);
+}
+
+window.removeGangliaTag = function(type, value) {
+  if (!gangliaTags[type]) return;
+  gangliaTags[type] = gangliaTags[type].filter(t => t !== value);
+  renderGangliaTags(type);
+}
+
+function renderGangliaTags(type) {
+  const container = document.getElementById(`tags-${type}`);
+  if (!container) return;
+
+  const tags = gangliaTags[type] || [];
+
+  if (tags.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = tags.map(tag => `
+    <span class="tag">
+      ${tag}
+      <button class="tag-remove" onclick="removeGangliaTag('${type}', '${tag}')" title="Remove">×</button>
+    </span>
   `).join('');
 }
 
@@ -1779,6 +1876,7 @@ function resetGangliaModal() {
   document.getElementById('confirmGanglia').classList.add('hidden');
   gangliaQuestions = [];
   gangliaAnswers = {};
+  gangliaTags = {};
 }
 
 // ========================================

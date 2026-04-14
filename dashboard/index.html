@@ -152,6 +152,108 @@
     * {
       transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
+
+    /* Tag Input */
+    .tag-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      min-height: 2rem;
+      padding: 0.5rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+    }
+
+    .tags-list:empty::before {
+      content: 'No items added yet';
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.25rem 0.75rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      transition: all 0.2s;
+    }
+
+    .tag:hover {
+      border-color: var(--accent-color);
+    }
+
+    .tag-remove {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      font-size: 1.125rem;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .tag-remove:hover {
+      color: #ef4444;
+    }
+
+    .tag-input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tag-input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .tag-input:focus {
+      border-color: var(--accent-color);
+    }
+
+    .tag-btn {
+      padding: 0.5rem 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tag-btn:hover {
+      background: var(--bg-primary);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    .tag-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body class="dark bg-dark-bg text-dark-text">
